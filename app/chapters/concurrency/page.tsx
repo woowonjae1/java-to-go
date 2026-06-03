@@ -6,6 +6,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
+import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function ConcurrencyPage() {
   return (
@@ -13,8 +14,9 @@ export default function ConcurrencyPage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 4</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-          ⚡ 并发篇 — Threads → Goroutines
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
+          <span className="text-emerald-500"><ChapterIcon id="concurrency" className="w-8 h-8" /></span>
+          <span>并发篇 — Threads → Goroutines</span>
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           从重量级的操作系统线程池，到轻量级的用户态协程。理解 Go 的 GMP 调度模型、通道（Channel）的状态机矩阵，以及如何使用 Context 实现超时与生命周期控制。

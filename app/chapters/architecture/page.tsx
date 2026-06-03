@@ -6,6 +6,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
+import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function ArchitecturePage() {
   return (
@@ -13,8 +14,9 @@ export default function ArchitecturePage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 8</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-          ⚙️ 工程篇 — 工程架构、测试与发布
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
+          <span className="text-slate-500"><ChapterIcon id="architecture" className="w-8 h-8" /></span>
+          <span>工程篇 — 工程架构、测试与发布</span>
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           打通企业落地的最后一公里。对比 Java Maven/Gradle 多模块骨架、JUnit 反射测试、以及胖 JRE 容器镜像，理解 Go 物理包边界控制、Go 独有的表驱动测试（Table-Driven Tests），以及多阶段极简 Docker 打包部署。

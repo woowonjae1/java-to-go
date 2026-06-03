@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { chapters } from '@/lib/data'
 import { ProgressTracker } from '@/components/progress-tracker'
+import { ChapterIcon, chapterColorMap } from '@/components/chapter-icon'
 
 const container = {
   hidden: { opacity: 0 },
@@ -84,7 +85,7 @@ export default function Home() {
               </svg>
             </Link>
             <a
-              href="https://github.com"
+              href="https://github.com/woowonjae1/java-to-go"
               className="px-8 py-3.5 rounded-xl font-semibold text-base
                          bg-muted hover:bg-accent-light border border-card-border
                          transition-all duration-300 flex items-center gap-2"
@@ -233,12 +234,17 @@ export default function Home() {
                            transition-all duration-300 group h-full"
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${ch.color}
-                                   flex items-center justify-center text-2xl flex-shrink-0
-                                   group-hover:scale-110 transition-transform duration-300
-                                   shadow-lg`}>
-                    {ch.icon}
-                  </div>
+                  {(() => {
+                    const colors = chapterColorMap[ch.id] || { bg: 'bg-muted', text: 'text-foreground', border: 'border-transparent' }
+                    return (
+                      <div className={`w-14 h-14 rounded-xl ${colors.bg} ${colors.text} ${colors.border} border
+                                       flex items-center justify-center flex-shrink-0
+                                       group-hover:scale-110 transition-transform duration-300
+                                       shadow-md`}>
+                        <ChapterIcon id={ch.id} className="w-7 h-7" />
+                      </div>
+                    )
+                  })()}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs text-muted-fg font-mono">Chapter {index + 1}</span>

@@ -227,11 +227,13 @@ export const chapters: ChapterMeta[] = [
     titleEn: 'Enterprise Case Study',
     icon: '🚀',
     color: 'from-indigo-500 to-violet-600',
-    description: '手把手实现一个典型企业级 Go 服务——打通数据库、缓存、拦截器与统一依赖组装',
+    description: '以 rorolee-bot-oversea 项目为范本，打通从基础语法到企业落地的最后一关，将核心架构完全平替为 Go 语言。',
     sections: [
-      { id: 'proj-layout', title: '物理架构目录', javaConcept: 'Spring Multi-Module', goConcept: 'Go Standard Layout' },
-      { id: 'proj-code', title: '业务核心代码', javaConcept: 'Controller-Service-Mapper', goConcept: 'Gin-Service-Repository' },
-      { id: 'proj-main', title: '依赖显式连线组装', javaConcept: 'ComponentScan 反射容器', goConcept: 'main.go 手动 Wire' },
+      { id: 'proj-layout', title: '物理架构与配置加载', javaConcept: 'Spring Multi-Module', goConcept: 'Go Mono-repo & Viper' },
+      { id: 'proj-db', title: '数据模型与事务管理', javaConcept: 'MyBatis-Plus Entity & Transactional', goConcept: 'GORM Tags & Defer Rollback' },
+      { id: 'proj-auth', title: '双端鉴权与会话隔离', javaConcept: 'Sa-Token JWT & Redis Session', goConcept: 'Gin JWT Middleware & Singleflight' },
+      { id: 'proj-chat', title: 'AI 消息链路与流通道', javaConcept: 'Spring MVC & Downstream HTTP', goConcept: 'Gin Route & Channels & Context' },
+      { id: 'proj-mq', title: '异步队列与三方校验', javaConcept: 'Spring AMQP & Apple/Stripe SDK', goConcept: 'amqp091 Consumer & Webhook Sign' },
     ],
   },
 ]

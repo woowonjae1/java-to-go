@@ -6,6 +6,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
+import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function OOPPage() {
   return (
@@ -13,8 +14,9 @@ export default function OOPPage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 2</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-          🏗️ 结构篇 — OOP → Composition
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
+          <span className="text-purple-500"><ChapterIcon id="oop" className="w-8 h-8" /></span>
+          <span>结构篇 — OOP → Composition</span>
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           告别深重的类继承树，拥抱扁平的结构体组合。Go 的设计哲学是<strong>“组合优于继承”</strong>，并通过隐式接口（鸭子类型）实现了极致的解耦与多态。

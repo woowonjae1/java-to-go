@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { chapters } from '@/lib/data'
 import { type ReactNode } from 'react'
+import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function ChaptersLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
@@ -21,13 +22,15 @@ export default function ChaptersLayout({ children }: { children: ReactNode }) {
                 <Link
                   href={`/chapters/${ch.id}`}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm
-                             transition-all duration-200
+                             transition-all duration-200 group
                              ${isActive
                                ? 'bg-accent-light text-accent font-semibold'
                                : 'text-muted-fg hover:text-foreground hover:bg-muted'
                              }`}
                 >
-                  <span>{ch.icon}</span>
+                  <span className={`${isActive ? 'text-accent' : 'text-muted-fg group-hover:text-foreground'} shrink-0`}>
+                    <ChapterIcon id={ch.id} className="w-5 h-5" />
+                  </span>
                   <div>
                     <div className="font-medium">{ch.title}</div>
                     <div className="text-xs opacity-70">{ch.titleEn}</div>

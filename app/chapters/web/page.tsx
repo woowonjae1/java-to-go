@@ -6,6 +6,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
+import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function WebPage() {
   return (
@@ -13,8 +14,9 @@ export default function WebPage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 5</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-          🌐 Web 篇 — Web & API 开发
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
+          <span className="text-rose-500"><ChapterIcon id="web" className="w-8 h-8" /></span>
+          <span>Web 篇 — Web & API 开发</span>
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           直击 Java 程序员最熟悉的 Spring MVC / Spring Boot Web 架构。理解在 Go 世界中，如何使用轻量级 Web 引擎（如 Gin）构建高性能 RESTful APIs，掌握中间件的洋葱模型以及标签化的请求绑定与参数校验。

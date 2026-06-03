@@ -6,6 +6,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
+import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function DatabasePage() {
   return (
@@ -13,8 +14,9 @@ export default function DatabasePage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 6</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-          💾 数据篇 — 数据库与事务管理
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
+          <span className="text-amber-500"><ChapterIcon id="database" className="w-8 h-8" /></span>
+          <span>数据篇 — 数据库与事务管理</span>
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           告别声明式事务魔法。对比 Java MyBatis/JPA，理解 Go 的 ORM 底层原理、`database/sql` 连接池的零配置自动调度，以及如何通过显式事务链及 defer 实现绝对可靠的数据事务一致性。

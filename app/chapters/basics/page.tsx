@@ -6,6 +6,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
+import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function BasicsPage() {
   return (
@@ -13,8 +14,9 @@ export default function BasicsPage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 1</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-          🧱 基础篇 — Types & Variables
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
+          <span className="text-blue-500"><ChapterIcon id="basics" className="w-8 h-8" /></span>
+          <span>基础篇 — Types & Variables</span>
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           从 Java 的类型系统出发，理解 Go 的基本类型、零值（zero value）、值拷贝语义、指针操作、字符串 UTF-8 编码以及切片（Slice）和映射（Map）的底层机制。这些是您理解 Go 高效运行的基石。

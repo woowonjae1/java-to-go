@@ -6,6 +6,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
+import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function MiddlewarePage() {
   return (
@@ -13,8 +14,9 @@ export default function MiddlewarePage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 7</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-          ☁️ 服务篇 — 中间件、RPC 与日志
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
+          <span className="text-teal-500"><ChapterIcon id="middleware" className="w-8 h-8" /></span>
+          <span>服务篇 — 中间件、RPC 与日志</span>
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           直击分布式工程中的核心三驾马车：缓存、通信与可观测性。比对 Spring Boot Redis 模板、Feign 声明式微服务契约、以及 Logback 系统，理解 Go 高并发中间件在强约束下的高性能演进。

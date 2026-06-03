@@ -6,6 +6,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
+import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function ErrorsPage() {
   return (
@@ -13,8 +14,9 @@ export default function ErrorsPage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 3</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-          🛡️ 异常篇 — Exceptions → Errors
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
+          <span className="text-orange-500"><ChapterIcon id="errors" className="w-8 h-8" /></span>
+          <span>异常篇 — Exceptions → Errors</span>
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           告别 try-catch，拥抱显式错误处理。在 Go 的世界里，错误是普通的值，不是异常，控制流永远清晰可见。
