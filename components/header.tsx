@@ -58,6 +58,25 @@ export function Header() {
               ))}
             </div>
           </div>
+
+          <Link
+            href="/examples"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-fg hover:text-foreground hover:bg-muted transition-all duration-200"
+          >
+            示例库
+          </Link>
+          <Link
+            href="/java-vs-go"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-fg hover:text-foreground hover:bg-muted transition-all duration-200"
+          >
+            速查表
+          </Link>
+          <Link
+            href="/faq"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-fg hover:text-foreground hover:bg-muted transition-all duration-200"
+          >
+            FAQ
+          </Link>
         </nav>
 
         {/* Right side */}
@@ -109,6 +128,16 @@ export function Header() {
               {ch.title} — {ch.titleEn}
             </Link>
           ))}
+          <div className="border-t border-card-border my-2" />
+          <Link href="/examples" onClick={() => setMobileOpen(false)} className="block px-4 py-3 rounded-lg text-sm hover:bg-muted transition-colors">
+            <span className="mr-2">📚</span>实战示例库
+          </Link>
+          <Link href="/java-vs-go" onClick={() => setMobileOpen(false)} className="block px-4 py-3 rounded-lg text-sm hover:bg-muted transition-colors">
+            <span className="mr-2">🔄</span>Java vs Go 速查表
+          </Link>
+          <Link href="/faq" onClick={() => setMobileOpen(false)} className="block px-4 py-3 rounded-lg text-sm hover:bg-muted transition-colors">
+            <span className="mr-2">❓</span>常见困惑 FAQ
+          </Link>
         </nav>
       )}
     </header>
