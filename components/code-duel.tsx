@@ -69,6 +69,12 @@ function escapeHtml(text: string) {
     .replace(/>/g, '&gt;')
 }
 
+function escapeHtmlAttribute(text: string) {
+  return escapeHtml(text)
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function highlightSyntax(
   code: string,
   language: 'java' | 'go',
@@ -172,13 +178,14 @@ function highlightSyntax(
     const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regexStr = /^\w+$/.test(kw) ? `\\b${escaped}\\b` : escaped
     const regex = new RegExp(regexStr, 'g')
+    const escapedKeyword = escapeHtmlAttribute(kw)
 
     const isCurrentlyActive = activeLang !== null && activeLang !== language && activeHighlight === kw
 
     processed = processed.replace(regex, (match) => {
       return `<span class="keyword-highlight cursor-pointer font-bold ${
         isCurrentlyActive ? 'keyword-highlight-active' : ''
-      }" data-keyword="${kw}" data-lang="${language}">${match}</span>`
+      }" data-keyword="${escapedKeyword}" data-lang="${language}">${match}</span>`
     })
   })
 

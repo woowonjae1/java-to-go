@@ -1,5 +1,3 @@
-'use client'
-
 import { CodeDuel } from '@/components/code-duel'
 import { GotchaCallout } from '@/components/gotcha-callout'
 

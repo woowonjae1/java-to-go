@@ -1,27 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { getChapterProgress, getTotalProgress } from '@/lib/progress'
 import { chapters } from '@/lib/data'
 import { ChapterIcon, chapterColorMap } from '@/components/chapter-icon'
+import { useClientMounted } from '@/lib/use-client-mounted'
 
 export function ProgressTracker() {
-  const [total, setTotal] = useState(0)
-  const [chapterProgress, setChapterProgress] = useState<Record<string, number>>({})
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-    setTotal(getTotalProgress())
-    const cp: Record<string, number> = {}
-    chapters.forEach((c) => {
-      cp[c.id] = getChapterProgress(c.id)
-    })
-    setChapterProgress(cp)
-  }, [])
+  const mounted = useClientMounted()
 
   if (!mounted) return null
+
+  const total = getTotalProgress()
+  const chapterProgress = Object.fromEntries(
+    chapters.map((chapter) => [chapter.id, getChapterProgress(chapter.id)])
+  )
 
   return (
     <div className="space-y-3">

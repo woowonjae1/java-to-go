@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Command } from 'cmdk'
+import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { chapters } from '@/lib/data'
 
@@ -20,7 +21,7 @@ export function CommandPalette() {
     return () => document.removeEventListener('keydown', down)
   }, [])
 
-  const navigate = (path: string) => {
+  const navigate = (path: Route) => {
     router.push(path)
     setOpen(false)
   }
@@ -74,7 +75,7 @@ export function CommandPalette() {
                     <Command.Item
                       key={ch.id}
                       value={`${ch.title} ${ch.titleEn} ${ch.description}`}
-                      onSelect={() => navigate(`/chapters/${ch.id}`)}
+                      onSelect={() => navigate(`/chapters/${ch.id}` as Route)}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
                                  cursor-pointer hover:bg-accent-light data-[selected=true]:bg-accent-light
                                  transition-colors"
@@ -94,7 +95,7 @@ export function CommandPalette() {
                       <Command.Item
                         key={`${ch.id}-${sec.id}`}
                         value={`${sec.title} ${sec.javaConcept} ${sec.goConcept}`}
-                        onSelect={() => navigate(`/chapters/${ch.id}#${sec.id}`)}
+                        onSelect={() => navigate(`/chapters/${ch.id}#${sec.id}` as Route)}
                         className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm
                                    cursor-pointer hover:bg-accent-light data-[selected=true]:bg-accent-light
                                    transition-colors"

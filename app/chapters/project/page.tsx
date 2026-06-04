@@ -1,8 +1,5 @@
-'use client'
-
 import { CodeDuel } from '@/components/code-duel'
 import { GoPlayground } from '@/components/go-playground'
-import { GotchaCallout } from '@/components/gotcha-callout'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
 import { ChapterIcon } from '@/components/chapter-icon'
@@ -18,7 +15,7 @@ export default function ProjectPage() {
           <span>实战篇 — 企业级案例实战</span>
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
-          打通从基础语法到企业落地的最后一关。以真实的 AI 语音助手服务端 <code>rorolee-bot-oversea</code> 项目为例，深入探讨如何将 Spring Boot、MyBatis-Plus、Sa-Token 和 RabbitMQ 等 Java 微服务技术平替至高性能、云原生的 Go 生态，实现极简高效的工程落地。
+          打通从基础语法到企业落地的最后一关。以企业级 AI 语音助手服务端 <code>enterprise-ai-assistant-server</code> 示例项目为例，深入探讨如何将 Spring Boot、MyBatis-Plus、Sa-Token 和 RabbitMQ 等 Java 微服务技术平替至高性能、云原生的 Go 生态，实现极简高效的工程落地。
         </p>
       </div>
 
@@ -31,7 +28,7 @@ export default function ProjectPage() {
         
         <h3 className="text-lg font-semibold mt-4 text-foreground/90">【基础】工程文件管理与依赖管理</h3>
         <p className="text-muted-fg leading-relaxed">
-          Java 企业项目 <code>rorolee-bot-oversea</code> 采用 Maven 多模块（<code>admin</code> 和 <code>front</code>）物理隔离，通过父子 <code>pom.xml</code> 级联定义第三方依赖版本。
+          Java 企业项目 <code>enterprise-ai-assistant-server</code> 采用 Maven 多模块（<code>admin</code> 和 <code>front</code>）物理隔离，通过父子 <code>pom.xml</code> 级联定义第三方依赖版本。
           在 Go 中，我们不需要引入复杂的嵌套子模块，而是采用 **Mono-repo 扁平单包模型**，在 <code>cmd/</code> 目录中声明多个启动入口共享底层的 <code>internal/</code> 物理包。
         </p>
 
@@ -54,7 +51,7 @@ export default function ProjectPage() {
     </properties>
 </project>`}
           goCode={`// go.mod
-module rorolee-bot
+module enterprise-ai-assistant
 
 go 1.21
 
@@ -159,7 +156,7 @@ func initDatabase() *gorm.DB {
 
         <h4 className="text-sm font-bold mb-2">Go Mono-repo 物理布局推荐</h4>
         <pre className="text-xs font-mono bg-code-bg p-4 rounded-lg text-zinc-300 my-4 overflow-x-auto">
-{`rorolee-bot/
+{`enterprise-ai-assistant/
 ├── cmd/
 │   ├── front/
 │   │   └── main.go       # 前台 API 服务入口
@@ -268,7 +265,7 @@ ENTRYPOINT ["./bot-front", "-env=prod"]`}
         
         <h3 className="text-lg font-semibold mt-4 text-foreground/90">【基础】MyBatis-Plus Entity 注解转换成 GORM Tags</h3>
         <p className="text-muted-fg leading-relaxed">
-          Java <code>rorolee-bot-oversea</code> 中，实体对象使用 MyBatis-Plus 提供的注解映射字段。在 Go 中，我们直接通过结构体的 Tag 进行显式定义。
+          Java <code>enterprise-ai-assistant-server</code> 中，实体对象使用 MyBatis-Plus 提供的注解映射字段。在 Go 中，我们直接通过结构体的 Tag 进行显式定义。
         </p>
 
         <CodeDuel
@@ -529,7 +526,7 @@ func (s *MessageService) SaveMessage(ctx context.Context, msg *ConversationMessa
         
         <h3 className="text-lg font-semibold mt-4 text-foreground/90">【基础】Sa-Token 魔法与 Go 显式 Claims 结构体</h3>
         <p className="text-muted-fg leading-relaxed">
-          Java <code>rorolee-bot-oversea</code> 利用 Sa-Token 的 <code>loginType=front-bot</code> 和 <code>loginType=admin-bot</code> 机制对前后台用户进行会话隔离。
+          Java <code>enterprise-ai-assistant-server</code> 利用 Sa-Token 的 <code>loginType=front-bot</code> 和 <code>loginType=admin-bot</code> 机制对前后台用户进行会话隔离。
           在 Go 中，我们自定义包含 <code>LoginType</code> 字段的 JWT Claims 结构体进行显式表达：
         </p>
 
@@ -1529,7 +1526,7 @@ PASS: 企业级分层依赖显式组装成功！`}
         title="实战篇测验"
         questions={[
           {
-            question: '在将 rorolee-bot-oversea 从 Maven 多模块转换为 Go 时，关于项目物理布局的推荐方案是？',
+            question: '在将 enterprise-ai-assistant-server 从 Maven 多模块转换为 Go 时，关于项目物理布局的推荐方案是？',
             options: [
               '在 Go 中也建立两个子模块包，并声明两个独立的 go.mod 描述文件',
               '使用 Mono-repo 结构，在一个 go.mod 下通过 cmd/front 和 cmd/admin 两个入口启动并共享同一个 internal 业务模块包',

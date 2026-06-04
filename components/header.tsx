@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import type { Route } from 'next'
 import { ThemeToggle } from './theme-toggle'
 import { CommandPalette } from './command-palette'
 import { chapters } from '@/lib/data'
@@ -79,7 +80,7 @@ export function Header() {
                     return (
                       <Link
                         key={ch.id}
-                        href={`/chapters/${ch.id}`}
+                        href={`/chapters/${ch.id}` as Route}
                         className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/60 border border-transparent hover:border-card-border transition-all duration-200"
                       >
                         <div className={`w-10 h-10 rounded-lg ${colors.bg} ${colors.text} flex items-center justify-center text-lg shadow-sm shrink-0`}>
@@ -161,7 +162,7 @@ export function Header() {
             return (
               <Link
                 key={ch.id}
-                href={`/chapters/${ch.id}`}
+                href={`/chapters/${ch.id}` as Route}
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm hover:bg-muted transition-colors"
               >

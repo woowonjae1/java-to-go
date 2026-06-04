@@ -1,13 +1,11 @@
 'use client'
 
 import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
+import { useClientMounted } from '@/lib/use-client-mounted'
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => setMounted(true), [])
+  const mounted = useClientMounted()
 
   if (!mounted) return <div className="w-10 h-10" />
 

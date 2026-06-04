@@ -1,5 +1,3 @@
-'use client'
-
 import { CodeDuel } from '@/components/code-duel'
 import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
@@ -193,7 +191,7 @@ func main() {
           Go 的错误设计分为两种经典模式：
         </p>
         <ul className="text-muted-fg list-disc pl-5 my-2 leading-relaxed">
-          <li><strong>哨兵错误 (Sentinel Error)</strong>：声明为全局常量的基础错误，如 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">var ErrNotFound = errors.New("not found")</code>，常用于表示特定的状态码。</li>
+          <li><strong>哨兵错误 (Sentinel Error)</strong>：声明为全局常量的基础错误，如 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">var ErrNotFound = errors.New(&quot;not found&quot;)</code>，常用于表示特定的状态码。</li>
           <li><strong>结构体错误 (Custom Struct Error)</strong>：为错误携带更多结构化上下文，如携带验证失败的具体字段名称。</li>
         </ul>
 
@@ -245,7 +243,7 @@ func Pay() error {
           在 Java 中，通过传入 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">cause</code> 可以将原始异常链条式保留。
         </p>
         <p className="text-muted-fg mb-6 leading-relaxed">
-          Go 在 1.13 引入了统一的**错误包装 (Error Wrapping)** 规范。通过 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">fmt.Errorf("context: %w", err)</code>，可以使用 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">%w</code> 动词将原始错误包装在新错误中。
+          Go 在 1.13 引入了统一的**错误包装 (Error Wrapping)** 规范。通过 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">fmt.Errorf(&quot;context: %w&quot;, err)</code>，可以使用 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">%w</code> 动词将原始错误包装在新错误中。
           这会创建一个包装链。标准库提供了两个极其强大的函数来检查和拆包这个链：
         </p>
         <ul className="text-muted-fg list-disc pl-5 my-2 leading-relaxed">

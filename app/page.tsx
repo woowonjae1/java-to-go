@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import type { Route } from 'next'
 import { motion } from 'framer-motion'
 import { chapters } from '@/lib/data'
 import { ProgressTracker } from '@/components/progress-tracker'
@@ -228,7 +229,7 @@ export default function Home() {
           {chapters.map((ch, index) => (
             <motion.div key={ch.id} variants={item}>
               <Link
-                href={`/chapters/${ch.id}`}
+                href={`/chapters/${ch.id}` as Route}
                 className="block p-6 rounded-2xl bg-card border border-card-border
                            hover:shadow-[var(--shadow-lg)] hover:border-accent/30
                            transition-all duration-300 group h-full"

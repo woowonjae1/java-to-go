@@ -1,9 +1,6 @@
-'use client'
-
 import { CodeDuel } from '@/components/code-duel'
 import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
-import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
 import { ChapterIcon } from '@/components/chapter-icon'
@@ -45,11 +42,11 @@ export default function BasicsPage() {
                 <td className="py-3 font-semibold text-foreground">变量与常量声明</td>
                 <td className="py-3 font-mono leading-relaxed">
                   int age = 18;<br/>
-                  final String name = "Go";
+                  final String name = &quot;Go&quot;;
                 </td>
                 <td className="py-3 font-mono leading-relaxed">
                   var age int = 18 <span className="text-zinc-500">(显式)</span><br/>
-                  name := "Go" <span className="text-zinc-500">(推推导，仅限函数内)</span><br/>
+                  name := &quot;Go&quot; <span className="text-zinc-500">(推推导，仅限函数内)</span><br/>
                   const pi = 3.14 <span className="text-zinc-500">(常量)</span>
                 </td>
               </tr>
@@ -57,12 +54,12 @@ export default function BasicsPage() {
                 <td className="py-3 font-semibold text-foreground">条件分支 (if)</td>
                 <td className="py-3 font-mono leading-relaxed">
                   if (age &gt;= 18) {"{"}<br/>
-                  &nbsp;&nbsp;&nbsp;&nbsp;System.out.println("adult");<br/>
+                  &nbsp;&nbsp;&nbsp;&nbsp;System.out.println(&quot;adult&quot;);<br/>
                   {"}"}
                 </td>
                 <td className="py-3 font-mono leading-relaxed">
-                  if age &gt;= 18 {"{"} <span className="text-zinc-500">// 括号省略，{"{"} 必须同行</span><br/>
-                  &nbsp;&nbsp;&nbsp;&nbsp;println("adult")<br/>
+                  if age &gt;= 18 {"{"} <span className="text-zinc-500">{'// 括号省略，'}{"{"}{' 必须同行'}</span><br/>
+                  &nbsp;&nbsp;&nbsp;&nbsp;println(&quot;adult&quot;)<br/>
                   {"}"}
                 </td>
               </tr>
@@ -75,7 +72,7 @@ export default function BasicsPage() {
                 </td>
                 <td className="py-3 font-mono leading-relaxed">
                   for i := 0; i &lt; 10; i++ {"{"} ... {"}"}<br/>
-                  for cond {"{"} ... {"}"} <span className="text-zinc-500">// Go 唯一循环，等同 while</span><br/>
+                  for cond {"{"} ... {"}"} <span className="text-zinc-500">{'// Go 唯一循环，等同 while'}</span><br/>
                   for index, item := range slice {"{"} ... {"}"}
                 </td>
               </tr>
@@ -87,10 +84,10 @@ export default function BasicsPage() {
                   {"}"}
                 </td>
                 <td className="py-3 font-mono leading-relaxed">
-                  func add(a, b int) int {"{"} <span className="text-zinc-500">// 类型后置</span><br/>
+                  func add(a, b int) int {"{"} <span className="text-zinc-500">{'// 类型后置'}</span><br/>
                   &nbsp;&nbsp;&nbsp;&nbsp;return a + b<br/>
                   {"}"}<br/>
-                  func div(a, b int) (int, error) <span className="text-zinc-500">// 支持多返回值</span>
+                  func div(a, b int) (int, error) <span className="text-zinc-500">{'// 支持多返回值'}</span>
                 </td>
               </tr>
             </tbody>
@@ -162,7 +159,7 @@ if (score == null) {
 // 正确写法：使用指针表示空值，或者使用 ok 标志
 var score *int = nil // 此时指针可以为 nil`}
         >
-          Java 程序员习惯用 <code>null</code> 代表缺失或未初始化的状态。而在 Go 中，数字零值是 <code>0</code>，字符串零值是 <code>""</code>，布尔值是 <code>false</code>。如果您需要表达“缺失值”，请使用**指针类型**（如 <code>*int</code>，此时其零值为 <code>nil</code>）或配合 <code>bool</code> 标记字段。
+          Java 程序员习惯用 <code>null</code> 代表缺失或未初始化的状态。而在 Go 中，数字零值是 <code>0</code>，字符串零值是 <code>&quot;&quot;</code>，布尔值是 <code>false</code>。如果您需要表达“缺失值”，请使用**指针类型**（如 <code>*int</code>，此时其零值为 <code>nil</code>）或配合 <code>bool</code> 标记字段。
         </GotchaCallout>
 
         <GoPlayground

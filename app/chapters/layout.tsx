@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import type { Route } from 'next'
 import { usePathname } from 'next/navigation'
 import { chapters } from '@/lib/data'
 import { type ReactNode } from 'react'
@@ -15,12 +16,12 @@ export default function ChaptersLayout({ children }: { children: ReactNode }) {
       <aside className="hidden lg:block w-64 shrink-0 border-r border-sidebar-border bg-sidebar
                          sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto p-4">
         <nav className="space-y-1">
-          {chapters.map((ch, i) => {
+          {chapters.map((ch) => {
             const isActive = pathname === `/chapters/${ch.id}`
             return (
               <div key={ch.id}>
                 <Link
-                  href={`/chapters/${ch.id}`}
+                  href={`/chapters/${ch.id}` as Route}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm
                              transition-all duration-200 group
                              ${isActive

@@ -1,9 +1,6 @@
-'use client'
-
 import { CodeDuel } from '@/components/code-duel'
 import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
-import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
 import { ChapterIcon } from '@/components/chapter-icon'

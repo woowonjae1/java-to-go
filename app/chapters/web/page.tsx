@@ -1,9 +1,6 @@
-'use client'
-
 import { CodeDuel } from '@/components/code-duel'
 import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
-import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
 import { ChapterIcon } from '@/components/chapter-icon'
@@ -161,7 +158,7 @@ func AuthMiddleware() gin.HandlerFunc {
           这些标签是以反引号包裹的元数据键值对，由第三方库（如 Gin 默认的 `validator`）在序列化或解析时读取。
           Gin 内置的 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">c.ShouldBindJSON(&req)</code> 会同时完成：
           1. 反序列化 JSON 到结构体。
-          2. 根据 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">binding:"..."</code> 标签自动对字段的值（邮箱格式、字符串长度、非空）进行规则验证。
+          2. 根据 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">binding:&quot;...&quot;</code> 标签自动对字段的值（邮箱格式、字符串长度、非空）进行规则验证。
         </p>
 
         <CodeDuel

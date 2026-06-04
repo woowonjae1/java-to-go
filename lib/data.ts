@@ -110,6 +110,12 @@ export interface QuizQuestion {
   explanation: string
 }
 
+export interface ChapterTaskMeta {
+  chapterId: string
+  exerciseIds: string[]
+  quizIds: string[]
+}
+
 export const chapters: ChapterMeta[] = [
   {
     id: 'basics',
@@ -227,7 +233,7 @@ export const chapters: ChapterMeta[] = [
     titleEn: 'Enterprise Case Study',
     icon: '🚀',
     color: 'from-indigo-500 to-violet-600',
-    description: '以 rorolee-bot-oversea 项目为范本，打通从基础语法到企业落地的最后一关，将核心架构完全平替为 Go 语言。',
+    description: '以 enterprise-ai-assistant-server 示例项目为范本，打通从基础语法到企业落地的最后一关，将核心架构完全平替为 Go 语言。',
     sections: [
       { id: 'proj-layout', title: '物理架构与配置加载', javaConcept: 'Spring Multi-Module', goConcept: 'Go Mono-repo & Viper' },
       { id: 'proj-db', title: '数据模型与事务管理', javaConcept: 'MyBatis-Plus Entity & Transactional', goConcept: 'GORM Tags & Defer Rollback' },
@@ -235,5 +241,53 @@ export const chapters: ChapterMeta[] = [
       { id: 'proj-chat', title: 'AI 消息链路与流通道', javaConcept: 'Spring MVC & Downstream HTTP', goConcept: 'Gin Route & Channels & Context' },
       { id: 'proj-mq', title: '异步队列与三方校验', javaConcept: 'Spring AMQP & Apple/Stripe SDK', goConcept: 'amqp091 Consumer & Webhook Sign' },
     ],
+  },
+]
+
+export const chapterTasks: ChapterTaskMeta[] = [
+  {
+    chapterId: 'basics',
+    exerciseIds: ['basics-types', 'basics-pointers', 'basics-strings', 'basics-collections'],
+    quizIds: ['basics'],
+  },
+  {
+    chapterId: 'oop',
+    exerciseIds: ['oop-struct', 'oop-di'],
+    quizIds: ['oop'],
+  },
+  {
+    chapterId: 'errors',
+    exerciseIds: ['errors-try-catch', 'errors-wrapping'],
+    quizIds: ['errors'],
+  },
+  {
+    chapterId: 'concurrency',
+    exerciseIds: ['concurrency-goroutines', 'concurrency-context'],
+    quizIds: ['concurrency'],
+  },
+  {
+    chapterId: 'web',
+    exerciseIds: ['web-gin-handler'],
+    quizIds: ['web'],
+  },
+  {
+    chapterId: 'database',
+    exerciseIds: ['db-transaction'],
+    quizIds: ['database'],
+  },
+  {
+    chapterId: 'middleware',
+    exerciseIds: ['middleware-logging'],
+    quizIds: ['middleware'],
+  },
+  {
+    chapterId: 'architecture',
+    exerciseIds: ['arch-table-test'],
+    quizIds: ['architecture'],
+  },
+  {
+    chapterId: 'project',
+    exerciseIds: ['proj-manual-wiring'],
+    quizIds: ['project-quiz'],
   },
 ]

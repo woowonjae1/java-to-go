@@ -1,9 +1,5 @@
-'use client'
-
 import { CodeDuel } from '@/components/code-duel'
 import { GoPlayground } from '@/components/go-playground'
-import { GotchaCallout } from '@/components/gotcha-callout'
-import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
 import { ChapterIcon } from '@/components/chapter-icon'
@@ -112,11 +108,11 @@ resp, err := client.GetUser(ctx, &UserRequest{Id: 42})`}
           高性能结构化日志：Logback 字符串拼接 vs Zap 零堆分配 (Zero Allocation)
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
-          Java 的 SLF4J / Logback 在打印日志时，最常用的是花括号占位符拼接：<code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">logger.info("User {} login status: {}", username, status)</code>。这在频繁打印的大流量网关下，会在堆上生成成百上千个临时字符串和 `Object[]` 数组，触发高频 GC 停顿。
+          Java 的 SLF4J / Logback 在打印日志时，最常用的是花括号占位符拼接：<code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">logger.info(&quot;User &#123;&#125; login status: &#123;&#125;&quot;, username, status)</code>。这在频繁打印的大流量网关下，会在堆上生成成百上千个临时字符串和 <code>Object[]</code> 数组，触发高频 GC 停顿。
         </p>
         <p className="text-muted-fg mb-6 leading-relaxed">
           Go 的 <strong>Uber Zap</strong> 日志框架开创了**强类型结构化日志**的先河。
-          通过显式使用强类型字段（如 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">zap.String("key", "val")</code>），Zap 可以直接将值写入环形缓冲区，**完全实现了垃圾零堆分配（Zero Heap Allocation）**。同时，Zap 极度推崇输出 JSON 格式日志，以便直接对接 ELK / ELG 等日志采集中心。
+          通过显式使用强类型字段（如 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">zap.String(&quot;key&quot;, &quot;val&quot;)</code>），Zap 可以直接将值写入环形缓冲区，**完全实现了垃圾零堆分配（Zero Heap Allocation）**。同时，Zap 极度推崇输出 JSON 格式日志，以便直接对接 ELK / ELG 等日志采集中心。
         </p>
 
         <CodeDuel

@@ -136,7 +136,7 @@ export function GoPlayground({
           markExerciseDone(id)
         }
       }
-    } catch (err) {
+    } catch {
       setOutput('网络错误，请检查连接后重试')
       setHasError(true)
     } finally {

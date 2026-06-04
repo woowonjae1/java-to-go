@@ -1,6 +1,20 @@
 'use client'
 
+import { chapterTasks } from '@/lib/data'
+
 const STORAGE_KEY = 'java-to-go-progress'
+
+export const chapterTaskCounts = Object.fromEntries(
+  chapterTasks.map((chapter) => [
+    chapter.chapterId,
+    chapter.exerciseIds.length + chapter.quizIds.length,
+  ])
+)
+
+export const totalTaskCount = chapterTasks.reduce(
+  (total, chapter) => total + chapter.exerciseIds.length + chapter.quizIds.length,
+  0
+)
 
 export interface Progress {
   completedExercises: string[]
@@ -56,14 +70,28 @@ export function setLastVisited(chapterId: string) {
 
 export function getChapterProgress(chapterId: string): number {
   const p = getProgress()
-  const chapterExercises = p.completedExercises.filter(id => id.startsWith(chapterId))
-  // Each chapter has 4 exercises
-  return Math.min(100, Math.round((chapterExercises.length / 4) * 100))
+  const chapter = chapterTasks.find((task) => task.chapterId === chapterId)
+  if (!chapter) return 0
+
+  const completedExercises = chapter.exerciseIds.filter((id) => p.completedExercises.includes(id)).length
+  const completedQuizzes = chapter.quizIds.filter((id) => p.completedQuizzes.includes(id)).length
+  const chapterTaskCount = chapterTaskCounts[chapterId] || 0
+
+  if (chapterTaskCount === 0) return 0
+  return Math.min(100, Math.round(((completedExercises + completedQuizzes) / chapterTaskCount) * 100))
 }
 
 export function getTotalProgress(): number {
   const p = getProgress()
-  // Total: 16 exercises + 4 quizzes = 20 tasks
-  const total = p.completedExercises.length + p.completedQuizzes.length
-  return Math.min(100, Math.round((total / 20) * 100))
+  const completedExercises = chapterTasks.reduce(
+    (total, chapter) => total + chapter.exerciseIds.filter((id) => p.completedExercises.includes(id)).length,
+    0
+  )
+  const completedQuizzes = chapterTasks.reduce(
+    (total, chapter) => total + chapter.quizIds.filter((id) => p.completedQuizzes.includes(id)).length,
+    0
+  )
+
+  if (totalTaskCount === 0) return 0
+  return Math.min(100, Math.round(((completedExercises + completedQuizzes) / totalTaskCount) * 100))
 }
