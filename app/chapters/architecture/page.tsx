@@ -91,29 +91,34 @@ project-root/
           javaCode={`// Java: Mockito 动态打桩
 @Test
 public void testAdd() {
+    // 1. 使用 Mockito 框架在运行期动态生成 Calculator 的代理子类，劫持其方法调用
     Calculator calc = Mockito.mock(Calculator.class);
+    // 2. 录制桩行为（Stubbing）：当调用 calc.add(2, 3) 时，强制返回 5。注意：该桩数据与测试断言逻辑紧密耦合
     Mockito.when(calc.add(2, 3)).thenReturn(5);
     
+    // 3. 执行测试断言，验证行为是否匹配。若需要测试不同边界值，需编写多个独立的 @Test 方法或使用参数化测试
     assertEquals(5, calc.add(2, 3));
 }`}
           goCode={`// Go: 结构体测试表，逻辑高度复用
 func TestAdd(t *testing.T) {
-    // 声明测试数据表
+    // 1. 声明匿名结构体切片作为“测试数据表”，将测试输入 (a, b) 和期望输出 (want) 集中定义，实现数据与逻辑解耦
     tests := []struct {
-        name string
-        a, b int
-        want int
+        name string // 子测试用例名称
+        a, b int    // 测试输入参数
+        want int    // 预期输出值
     }{
-        {"positive", 2, 3, 5},
-        {"negative", -1, -2, -3},
-        {"zero", 0, 5, 5},
+        {"positive", 2, 3, 5},     // 用例1：正数相加
+        {"negative", -1, -2, -3},  // 用例2：负数相加
+        {"zero", 0, 5, 5},         // 用例3：零与正数相加
     }
 
-    // 循环并并发运行子测试
+    // 2. 遍历测试数据表，循环执行测试逻辑
     for _, tc := range tests {
+        // 3. 使用 t.Run 启动子测试用例，在报告中可清晰看到每组数据的运行状态
         t.Run(tc.name, func(t *testing.T) {
-            got := Add(tc.a, tc.b)
+            got := Add(tc.a, tc.b) // 调用被测函数
             if got != tc.want {
+                // 4. 使用 t.Errorf 记录错误，且不会中断其他子测试的运行（非致命错误）
                 t.Errorf("Add(%d, %d) = %d; want %d", tc.a, tc.b, got, tc.want)
             }
         })
@@ -122,6 +127,63 @@ func TestAdd(t *testing.T) {
           highlights={[
             { java: 'Mockito.mock', go: '接口替换 Mock' },
             { java: '@Test', go: 'TestXxx(t *testing.T)' },
+          ]}
+        />
+
+        <GotchaCallout
+          level="warning"
+          title="避坑指南：并行测试中的闭包变量捕获地雷"
+        >
+          在 Go 语言中，for 循环变量在每次迭代中是共享同一内存地址的（Go 1.22 之前）。如果子测试中开启了 <code>t.Parallel()</code> 并在闭包中引用了循环变量，会导致所有子测试最终读取到相同的（最后一个）测试用例数据。因此在开启 <code>t.Parallel()</code> 时，防御性地编写 <code>tc := tc</code> 非常关键。
+        </GotchaCallout>
+
+        <CodeDuel
+          title="Java 编译器 effectively final 约束 vs Go 并行测试与闭包变量捕获"
+          javaCode={`// Java: 编译器强制要求 Lambda 捕获 effectively final 变量
+@Test
+public void testParallel() {
+    List<String> list = Arrays.asList("case1", "case2", "case3");
+    for (String item : list) {
+        // 如果在 Lambda 中尝试修改 item，或者 item 被重新赋值，编译器将直接报错：
+        // "Local variable item defined in an enclosing scope must be final or effectively final"
+        // 从而在编译期就杜绝了多线程并发捕获共享指针/变量被修改的安全问题
+        CompletableFuture.runAsync(() -> {
+            System.out.println("Running: " + item); // item 是隐式 final 的
+        });
+    }
+}`}
+          goCode={`// Go: 并发测试下的闭包变量捕获地雷与防御手段
+func TestParallel(t *testing.T) {
+    tests := []struct {
+        name  string
+        input int
+    }{
+        {"case1", 1},
+        {"case2", 2},
+        {"case3", 3},
+    }
+
+    for _, tc := range tests {
+        // 【关键防御】tc := tc
+        // 在 Go 1.22 之前，必须在循环体内重新声明一个同名局部变量 tc！
+        // 这样每次迭代都会在闭包捕获前，重新拷贝并分配一块独立的内存给新的 tc。
+        // 如果漏掉这一行，所有并发子测试运行的将全都是最后一个用例 "case3"！
+        tc := tc 
+
+        t.Run(tc.name, func(t *testing.T) {
+            // t.Parallel() 会让子测试在此行挂起并释放控制权，等循环结束后才并发启动
+            t.Parallel() 
+            
+            // 此时闭包访问的是本地独立分配的 tc 变量，安全运行并发测试
+            if tc.input < 0 { 
+                t.Error("should not be negative")
+            }
+        })
+    }
+}`}
+          highlights={[
+            { java: 'effectively final', go: 'tc := tc 重新声明本地副本' },
+            { java: 'CompletableFuture.runAsync', go: 't.Parallel() 异步挂起子测试' },
           ]}
         />
 
@@ -227,26 +289,31 @@ func main() {
         <CodeDuel
           title="Java 胖 JAR 镜像 vs Go 多阶段编译镜像"
           javaCode={`# Dockerfile for Java (胖镜像)
+# 1. 基础镜像必须包含完整的 JRE/JDK 运行环境，通常体积在 150MB~300MB 以上
 FROM openjdk:17-jdk-alpine
 
 WORKDIR /app
+# 2. 将编译好的 Fat JAR 拷贝进镜像中
 COPY target/app.jar app.jar
 
-# 必须细致微调 JVM 物理参数，否则极易触发容器 OOM 强杀
+# 3. 容器启动时必须调优 JVM 堆内存参数 (-Xms, -Xmx)
+# 否则在容器环境中 JVM 默认分配的内存可能超出宿主机/Cgroups 物理限额，触发系统的 OOM Killer 强杀容器
 ENTRYPOINT ["java", "-Xms256m", "-Xmx512m", "-jar", "app.jar"]`}
           goCode={`# Dockerfile for Go (多阶段精简镜像)
-# ---- 阶段 1: 编译可执行二进制 ----
+# ---- 阶段 1: 编译可执行二进制 (在装有 Go 编译器和 Alpine 的环境进行构建) ----
 FROM golang:1.21-alpine AS builder
 WORKDIR /build
 COPY . .
+# 禁用 CGO 并编译目标系统为 Linux 的纯静态链接二进制文件，排除任何对动态链接库的依赖
 RUN CGO_ENABLED=0 GOOS=linux go build -o main cmd/api/main.go
 
-# ---- 阶段 2: 极简纯净二进制拷贝 ----
+# ---- 阶段 2: 极简纯净二进制拷贝 (只保留编译产物，舍弃 Go SDK 及操作系统 Shell) ----
 FROM scratch
 WORKDIR /app
+# 从 builder 构建阶段拷贝可执行物理文件
 COPY --from=builder /build/main .
 
-# 极快启动 (1ms)，没有 JRE 开销，镜像总体仅约 12MB！
+# 极快启动 (1ms)，没有 JRE 开销，镜像总体仅约 12MB！由于无 shell 及其他依赖，安全性极高
 ENTRYPOINT ["./main"]`}
           highlights={[
             { java: 'openjdk:17-jdk-alpine (150M+)', go: 'scratch (0M)' },

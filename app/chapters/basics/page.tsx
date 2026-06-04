@@ -125,24 +125,24 @@ export default function BasicsPage() {
         <CodeDuel
           title="类型声明与逃逸分析对比"
           javaCode={`// Java: 区分原始类型与堆对象
-int a = 0;                     // 栈上分配
-Integer b = null;              // 堆对象，可为 null，有自动装箱开销
-String s = "Hello";            // 堆上常量池引用
+int a = 0;                     // 栈上分配：基本数据类型，存储在栈帧中
+Integer b = null;              // 堆对象，可为 null，有自动装箱/拆箱的性能开销
+String s = "Hello";            // 堆上常量池引用：字符串为堆对象，s存储其引用指针
 
 // 函数返回局部对象
 public User createUser() {
-    User u = new User("Alice"); 
-    return u;                  // 必须在堆上，GC 负责回收
+    User u = new User("Alice"); // 在堆上分配新对象内存
+    return u;                  // 传递引用，由 JVM GC 负责后续的垃圾回收
 }`}
-          goCode={`// Go: 统一类型，没有包装类，逃逸分析决定分配位置
-var a int                      // 默认零值: 0。栈上分配
-var s string                   // 默认零值: ""。栈上分配
-// 没有可为 nil 的 int!
+          goCode={`// Go: 统一类型，没有包装类，由编译器逃逸分析决定物理分配位置
+var a int                      // 默认零值: 0。生命周期未逃逸，直接在栈（Stack）上分配，效率极高
+var s string                   // 默认零值: ""。结构体本身在栈上分配，无包装类开销
+// 注意：在 Go 中，没有可以为 nil 的基础整型（例如 int），只能用指针 *int 表达空值
 
 // 函数返回局部变量指针
 func createUser() *User {
-    u := User{Name: "Alice"}
-    return &u                  // 编译器检测到 u 逃逸，自动在堆上分配
+    u := User{Name: "Alice"}   // 实例化局部变量
+    return &u                  // 核心特性：返回局部变量的指针。编译器检测到 u 逃逸到外部，自动在堆（Heap）上分配其内存，确保安全
 }`}
           highlights={[
             { java: 'Integer', go: 'var a int' },
@@ -233,33 +233,33 @@ map: map[] (is nil: true)`}
 
         <CodeDuel
           title="值拷贝 vs 指针传递"
-          javaCode={`// Java: 对象默认共享引用
+          javaCode={`// Java: 对象作为方法参数时，默认传递引用的拷贝，方法内修改影响原对象
 class User { String name; }
 
 void rename(User u) {
-    u.name = "Bob";            // 修改了原对象
+    u.name = "Bob";            // 修改了原对象在堆上的属性
 }
 
 User user = new User();
 user.name = "Alice";
-rename(user);                  // 传入引用拷贝
-// user.name 变为了 "Bob"`}
-          goCode={`// Go: 默认结构体是值拷贝，指针用于显式共享
+rename(user);                  // 传入 user 引用的拷贝，指向同一堆对象
+// 结果：user.name 变为了 "Bob"`}
+          goCode={`// Go: 结构体作为方法参数时，默认是值拷贝（深拷贝数据），指针用于显式共享内存
 type User struct { Name string }
 
-// 传入结构体值（会发生完整内容复制）
+// 传入结构体值（会发生完整内容复制，相当于新副本）
 func renameValue(u User) {
-    u.Name = "Bob"             // 仅修改副本，不影响原变量
+    u.Name = "Bob"             // 仅修改副本中的字段，不影响函数外的原结构体
 }
 
-// 传入指针（复制 8 字节的地址）
+// 传入结构体指针（仅复制 8 字节的物理内存地址）
 func renamePointer(u *User) {
-    u.Name = "Bob"             // 修改了原变量 (*u).Name 的缩写
+    u.Name = "Bob"             // 修改了原变量 (*u).Name 的值（Go 自动解引用，等同于 (*u).Name = "Bob"）
 }
 
 user := User{Name: "Alice"}
-renameValue(user)              // user.Name 依旧是 "Alice"
-renamePointer(&user)           // user.Name 变为了 "Bob"`}
+renameValue(user)              // 传入副本：user.Name 依旧是 "Alice"
+renamePointer(&user)           // 传入地址：&user 取得地址，user.Name 成功变为了 "Bob"`}
           highlights={[
             { java: 'rename(user)', go: 'renamePointer(&user)' },
             { java: 'User u', go: 'u *User' },
@@ -352,29 +352,29 @@ After: {Charlie 25}`}
 
         <CodeDuel
           title="字符串字符统计与遍历"
-          javaCode={`// Java: 基于 UTF-16 字符
+          javaCode={`// Java: 内部以 UTF-16 编码存储
 String s = "Go语言";
-int len = s.length();             // 4 (字符个数)
-char c = s.charAt(2);             // '语'
+int len = s.length();             // 返回 4 (代表字符个数：'G', 'o', '语', '言')
+char c = s.charAt(2);             // 获取第三个字符 '语'
 
 // 正常遍历字符
 for (int i = 0; i < s.length(); i++) {
-    System.out.println(s.charAt(i));
+    System.out.println(s.charAt(i)); // 逐个打印字符
 }`}
-          goCode={`// Go: 基于 UTF-8 字节
+          goCode={`// Go: 内部以 UTF-8 字节编码存储，本身是一个只读的 []byte 字节切片
 s := "Go语言"
-byteLen := len(s)                 // 8 (字节长度！G=1, o=1, 语=3, 言=3)
-runeLen := utf8.RuneCountInString(s) // 4 (实际 Unicode 码点数)
+byteLen := len(s)                 // 返回 8 (字节长度！G=1, o=1, 中文字符'语'占3字节, '言'占3字节)
+runeLen := utf8.RuneCountInString(s) // 返回 4 (获取实际 Unicode 码点数)
 
-// ❌ 错误遍历：按字节索引
+// ❌ 错误遍历方式：直接按字节索引遍历
 for i := 0; i < len(s); i++ {
-    fmt.Printf("%c ", s[i])       // 中文字符会打印出乱码
+    fmt.Printf("%c ", s[i])       // 打印字节，中文字符的多字节会被拆散，从而打印出乱码
 }
 
-// ✅ 正确遍历：使用 range 关键字
+// ✅ 正确遍历方式：使用 range 关键字迭代
 for idx, r := range s {
-    fmt.Printf("%d:%c ", idx, r)  // 自动解密 UTF-8 为 rune (码点)
-    // 输出索引会跳跃: 0:G, 1:o, 2:语, 5:言
+    fmt.Printf("%d:%c ", idx, r)  // 自动将 UTF-8 字节流解码为单个 rune 码点（int32）
+    // 输出的索引是字节偏移，会发生跳跃: 0:G, 1:o, 2:语, 5:言 (语占3字节，下一个字符索引为2+3=5)
 }`}
           highlights={[
             { java: 's.length()', go: 'utf8.RuneCountInString(s)' },
@@ -487,28 +487,27 @@ func main() {
 
         <CodeDuel
           title="集合核心操作对比"
-          javaCode={`// Java: ArrayList 与 HashMap
+          javaCode={`// Java: ArrayList 与 HashMap，均在堆上分配，多线程写 HashMap 会导致并发修改异常或死循环
 List<String> list = new ArrayList<>();
-list.add("Alice");             // 添加
-list.remove(0);                // 移除
-int size = list.size();
+list.add("Alice");             // 动态追加元素
+list.remove(0);                // 移除指定位置的元素
+int size = list.size();        // 获取大小
 
 Map<String, Integer> map = new HashMap<>();
-map.put("Java", 20);
-int val = map.getOrDefault("Go", 0); // 避免空指针
+map.put("Java", 20);           // 存入键值
+int val = map.getOrDefault("Go", 0); // 避免空指针获取默认值
 
 // 线程安全容器
 Map<String, Integer> concurrentMap = new ConcurrentHashMap<>();`}
-          goCode={`// Go: Slice 与 Map
-var list []string              // nil 切片，可直接 append
-list = append(list, "Alice")   // append 可能会触发底层容量扩充并重分配数组
-list = list[1:]                // 物理截取（切片头部偏移，高效）
-size := len(list)
+          goCode={`// Go: 切片 (Slice) 与 映射 (Map)
+var list []string              // 声明 nil 切片，不需要初始化即可直接进行 append 操作
+list = append(list, "Alice")   // 追加元素。如超出底层容量，Go 自动重新分配底层数组并复制
+list = list[1:]                // 物理截取（仅修改 Slice Header 属性，不拷贝底层数组，性能极高）
+size := len(list)              // 获取当前切片长度
 
-m := make(map[string]int)
-m["Java"] = 20
-val, ok := m["Go"]             // ok-idiom (comma ok) 模式！
-// 如果 ok 为 false，代表 key 不存在，val 自动为零值 0
+m := make(map[string]int)      // Map 必须使用 make 初始化后才能写入，否则向 nil map 写入会 panic
+m["Java"] = 20                 // 存入键值
+val, ok := m["Go"]             // comma ok 校验模式！如果 ok 为 false，代表 key 不存在，val 自动为零值 0
 
 // ⚠️ 并发安全的 map
 var mu sync.RWMutex
@@ -519,6 +518,42 @@ mu.Unlock()`}
             { java: 'ArrayList', go: 'Slice Header' },
             { java: 'getOrDefault', go: 'val, ok := m["Go"]' },
             { java: 'ConcurrentHashMap', go: 'sync.RWMutex' },
+          ]}
+        />
+
+        <CodeDuel
+          title="集合深拷贝与切片/映射扩容"
+          javaCode={`// Java: 容器复制与初始化
+List<String> src = Arrays.asList("A", "B");
+List<String> dest = new ArrayList<>(src); // 复制列表
+dest.set(0, "C"); // 修改副本不影响原列表
+
+// 预分配容量，避免底层数组频繁扩容
+List<String> list = new ArrayList<>(1000);`}
+          goCode={`// Go: 切片/映射的拷贝与 make 预分配
+src := []string{"A", "B"}
+
+// ❌ 浅拷贝陷阱：只复制了 Slice Header，底层数组依然共享！
+shallowDest := src
+shallowDest[0] = "C" // 修改副本导致 src[0] 也被修改为 "C"
+
+// ✅ 深拷贝切片：必须先 make 分配内存空间，再使用 copy()
+deepDest := make([]string, len(src)) // 预分配等长空间
+copy(deepDest, src)                 // 拷贝底层数据
+deepDest[0] = "D"                   // 修改副本，原切片不受影响
+
+// ✅ 深拷贝 Map：必须 make 新的 map，再手动 for range 循环赋值
+srcMap := map[string]int{"A": 1}
+deepMap := make(map[string]int, len(srcMap)) // 预分配容量
+for k, v := range srcMap {
+    deepMap[k] = v
+}
+
+// 💡 预分配切片容量，避开自动扩容性能损耗
+largeSlice := make([]int, 0, 1000) // 长度为0，容量为1000`}
+          highlights={[
+            { java: 'new ArrayList<>(src)', go: 'copy(deepDest, src)' },
+            { java: 'new ArrayList<>(1000)', go: 'make([]int, 0, 1000)' },
           ]}
         />
 

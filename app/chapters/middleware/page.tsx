@@ -39,24 +39,25 @@ export default function MiddlewarePage() {
 
         <CodeDuel
           title="RedisTemplate 隐式连接 vs go-redis 强 Context 约束"
-          javaCode={`// Java: 隐式连接，无法轻松透传超时信号
+          javaCode={`// Java: 隐式连接管理，无法对每一次操作精细化传递超时或打断信号
 @Autowired
 private StringRedisTemplate redisTemplate;
 
 public void saveToken(String key, String token) {
+    // 隐式获取连接并执行 set，其超时时间完全由连接池统一配置决定，不易动态中断
     redisTemplate.opsForValue().set(key, token, 1, TimeUnit.HOURS);
 }`}
-          goCode={`// Go: 所有命令均强要求传入 ctx
+          goCode={`// Go: 任何底层 Redis 调用均强制要求显式传入 ctx 进行超时与链路中断控制
 package main
 
 import (
     "context"
     "time"
-    "github.com/go-redis/redis/v8"
+    "github.com/go-redis/redis/v9" // 使用 v9 经典版本
 )
 
 func SaveToken(ctx context.Context, rdb *redis.Client, key, token string) error {
-    // 显式传入 ctx：当 ctx 被超时撤销时，该 Set 请求会立刻中断返回
+    // 显式传入 ctx。如果上游（例如 HTTP 请求）超时被取消，ctx.Done() 信号触发，当前 Set 动作会物理切断 TCP 请求并立即释放连接！
     err := rdb.Set(ctx, key, token, 1*time.Hour).Err()
     return err
 }`}
@@ -83,19 +84,19 @@ func SaveToken(ctx context.Context, rdb *redis.Client, key, token string) error 
 
         <CodeDuel
           title="Feign 注解 HTTP vs Protobuf 编译强类型"
-          javaCode={`// Java: Feign 声明式客户端 (基于反射/JSON)
+          javaCode={`// Java: Feign 声明式客户端，在运行时通过 JDK 动态代理拦截方法，解析注解并利用反射拼装 HTTP JSON 请求
 @FeignClient(name = "user-service")
 public interface UserClient {
     @GetMapping("/users/{id}")
-    UserDto getUser(@PathVariable("id") Long id);
+    UserDto getUser(@PathVariable("id") Long id); // 运行时反射、JSON 编解码开销高
 }`}
-          goCode={`// Go: 编译生成的具体结构和方法接口
-// (定义于 .proto，由 protoc 编译生成)
+          goCode={`// Go: Protobuf 编译期绑定，强类型安全校验，运行期零反射代理开销
+// (下面的代码是由 protoc 编译器读取 .proto 文件后物理生成出来的，并非动态猜测)
 type UserServiceClient interface {
     GetUser(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*UserResponse, error)
 }
 
-// 客户端调用示例（强类型，零动态反射）
+// 客户端物理调用示例：使用二进制 Protobuf 进行序列化，走 HTTP/2 双向流，效率极高
 resp, err := client.GetUser(ctx, &UserRequest{Id: 42})`}
           highlights={[
             { java: 'OpenFeign (动态代理)', go: 'gRPC 生成的代码 (编译期绑定)' },
@@ -120,16 +121,61 @@ resp, err := client.GetUser(ctx, &UserRequest{Id: 42})`}
 
         <CodeDuel
           title="Logback 占位符 vs Zap 强类型零内存分配"
-          javaCode={`// Java: 占位符字符串拼接 (会生成临时对象数组)
+          javaCode={`// Java: 使用 {} 占位符。底层在调用时，必须隐式创建 Object[] 数组，并且将基础类型（如 Long）装箱为包装类，引起堆内存垃圾分配
 logger.info("Register success. id: {}, ip: {}", userId, reqIp);`}
-          goCode={`// Go: Zap 强类型结构化输出 (零临时对象分配)
+          goCode={`// Go: 强类型指定 Field。直接在栈中组织字段并直达缓冲区，完全实现堆上零对象分配（Zero Allocation）
 logger.Info("Register success",
-    zap.Int64("id", userId),
-    zap.String("ip", reqIp),
+    zap.Int64("id", userId),  // 强类型，防范 int 到 interface{} 的装箱分配
+    zap.String("ip", reqIp),  // 强类型
 )`}
           highlights={[
             { java: 'Object[] 数组隐式装箱', go: 'zap.Int64 / zap.String 强类型' },
             { java: '文本日志', go: '结构化 JSON 日志' },
+          ]}
+        />
+
+        <CodeDuel
+          title="生产级 Zap 高性能日志初始化"
+          javaCode={`// Java: logback-spring.xml 繁琐的 XML 配置
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>`}
+          goCode={`// Go: 纯代码显式配置高性能 Zap Logger 并输出结构化 JSON
+package main
+
+import (
+    "go.uber.org/zap"
+    "go.uber.org/zap/zapcore"
+    "os"
+)
+
+func InitLogger() *zap.Logger {
+    // 1. 定义 JSON 格式配置参数（对应 Kibana 日志解析）
+    encoderConfig := zap.NewProductionEncoderConfig()
+    encoderConfig.TimeKey = "timestamp"                  // 指定时间字段名称为 timestamp
+    encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder // 指定 ISO8601 时间格式
+
+    // 2. 创建 Core：分别指定日志输出流（Console/File）、日志格式（JSON）、输出级别
+    core := zapcore.NewCore(
+        zapcore.NewJSONEncoder(encoderConfig),             // JSON 结构化格式输出
+        zapcore.AddSync(os.Stdout),                        // 打印输出到标准控制台流
+        zap.NewAtomicLevelAt(zap.InfoLevel),               // 日志最低过滤级别为 Info
+    )
+
+    // 3. 构建并添加堆栈追踪、调用者所在的文件/行号信息
+    logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
+    return logger
+}`}
+          highlights={[
+            { java: 'logback.xml 复杂配置', go: 'zap.NewCore 纯代码装配' },
+            { java: 'PatternLayout 文本格式', go: 'NewJSONEncoder 结构化 JSON' },
           ]}
         />
 

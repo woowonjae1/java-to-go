@@ -39,39 +39,40 @@ export default function WebPage() {
 
         <CodeDuel
           title="Spring Boot 控制器 vs Gin 路由组"
-          javaCode={`// Java: 注解定义路由
-@RestController
-@RequestMapping("/api/v1/users")
+          javaCode={`// Java: 声明式注解，运行期 Classpath 扫描利用反射构建路由
+@RestController                   // 声明为控制器组件，返回值自动序列化为 JSON
+@RequestMapping("/api/v1/users") // 路由根路径
 public class UserController {
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}")          // 绑定 HTTP GET 方法及路径参数
     public ResponseEntity<User> getUser(@PathVariable Long id) {
-        User user = userService.findById(id);
-        return ResponseEntity.ok(user);
+        User user = userService.findById(id); // 查询用户
+        return ResponseEntity.ok(user);      // 响应 200 及用户数据
     }
 }`}
-          goCode={`// Go: 显式路由组与 Handler 函数
+          goCode={`// Go: 显式声明路由树与处理器（Handler），不依靠反射，物理级高性能匹配
 package main
 
 import "github.com/gin-gonic/gin"
 
 func main() {
-    r := gin.Default()
+    r := gin.Default() // 初始化默认的 Gin 引擎（带 Recovery 和 Logger 中间件）
     
     // 显式声明路由组 (Version 1)
     v1 := r.Group("/api/v1/users")
     {
-        // 绑定路径参数和具体的 Handler 函数
+        // 显式将路径参数 :id 绑定到 GetUserHandler 处理器函数上
         v1.GET("/:id", GetUserHandler)
     }
     
-    r.Run(":8080") // 阻塞并启动服务器
+    r.Run(":8080") // 启动并监听 8080 端口（阻塞式监听网络连接）
 }
 
+// Handler 处理器接收 *gin.Context 传参进行上下文数据读写
 func GetUserHandler(c *gin.Context) {
-    id := c.Param("id") // 读取路径参数
+    id := c.Param("id") // 直接读取匹配成功的路径参数 (:id)
     user := userService.FindByID(id)
-    c.JSON(200, user)   // 显式响应 JSON
+    c.JSON(200, user)   // 显式将对象序列化并响应 HTTP 200 JSON 数据给客户端
 }`}
           highlights={[
             { java: '@RestController', go: 'r := gin.Default()' },
@@ -111,30 +112,31 @@ v1.GET("/active", Handler2) // 运行时会直接崩溃或匹配混乱！
 
         <CodeDuel
           title="Spring 拦截器 vs Gin 中间件洋葱模型"
-          javaCode={`// Java: 显式拆分 preHandle 和 postHandle
+          javaCode={`// Java: 拦截器需要重写特定生命周期方法，物理逻辑分离较散
 public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object h) {
-        String token = req.getHeader("Authorization");
-        return "valid-token".equals(token); // 返回 false 拦截请求
+        String token = req.getHeader("Authorization"); // 获取头信息
+        return "valid-token".equals(token); // 返回 false 立即打断请求，返回 true 放行
     }
+    // 还需要重写 postHandle, afterCompletion 方法来处理后置逻辑
 }`}
-          goCode={`// Go: 闭包函数，一个 defer 搞定 pre/post 拦截
+          goCode={`// Go: 闭包 Handler 链，通过 c.Next() 优雅实现前置拦截和后置处理（洋葱模型）
 func AuthMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
-        // ---- 1. 前置过滤 (Pre-Handle) ----
+        // ---- 1. 前置过滤与安全拦截 (Pre-Handle) ----
         token := c.GetHeader("Authorization")
         if token != "valid-token" {
             c.JSON(401, gin.H{"error": "未登录"})
-            c.Abort() // 拦截后续的所有执行流！
-            return
+            c.Abort() // ‼️ 关键：显式打断调用链，阻断后续的所有 Handler 及中间件执行！
+            return    // 必须在此显式 return，以防止继续执行本闭包后半段的后置代码
         }
 
-        // ---- 2. 交出控制权，让后续 Handler 运行 ----
-        c.Next() 
+        // ---- 2. 移交执行权给后续节点 ----
+        c.Next() // 暂停当前执行，等待链路下游的 Handler 运行结束
 
-        // ---- 3. 后置处理 (Post-Handle) ----
-        // 请求处理完毕后，代码会回到这里继续执行
+        // ---- 3. 后置拦截与清理操作 (Post-Handle) ----
+        // 当下游所有 Handler 运行完毕，控制权会返回这里继续向下执行
         log.Println("请求处理完成，状态码为:", c.Writer.Status())
     }
 }`}
@@ -164,7 +166,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
         <CodeDuel
           title="Bean Validation vs Struct Binding Tags"
-          javaCode={`// Java: Annotation 注解声明
+          javaCode={`// Java: 声明对象属性，利用反射读取注解并验证
 public class RegisterReq {
     @NotNull(message = "邮箱不能为空")
     @Email(message = "邮箱格式不正确")
@@ -175,23 +177,24 @@ public class RegisterReq {
     private String password;
 }
 
-// Controller
+// Controller：通过在入口添加 @Valid 触发校验，如果校验失败抛出 MethodArgumentNotValidException
 public ResponseEntity register(@Valid @RequestBody RegisterReq req) {
-    // 框架反射验证并拦截
+    return ResponseEntity.ok("ok");
 }`}
-          goCode={`// Go: Struct 标签元数据声明
+          goCode={`// Go: 在结构体字段名右侧，使用反引号声明 Tag 键值对，显式指定参数序列化名与绑定规则
 type RegisterReq struct {
-    // binding 标签指定非空、合法邮箱
+    // json 指定反序列化名称，binding 指定验证引擎（validator）的非空与邮箱格式校验规则
     Email    string \`json:"email" binding:"required,email"\`
-    // binding 标签指定非空、最小长度 6
+    // binding 指定非空与长度限制范围
     Password string \`json:"password" binding:"required,min=6,max=20"\`
 }
 
-// Handler
+// Handler 处理器：传入变量地址显式触发绑定与校验
 func RegisterHandler(c *gin.Context) {
     var req RegisterReq
-    // 绑定并验证，一步到位
+    // ShouldBindJSON 会读取 Request Body JSON 数据，反序列化并自动触动 validator 引擎校验
     if err := c.ShouldBindJSON(&req); err != nil {
+        // 若校验失败（如邮箱格式不对），直接返回 HTTP 400 及报错信息
         c.JSON(400, gin.H{"error": err.Error()})
         return
     }
@@ -237,6 +240,46 @@ type UpdateReq struct {
         >
           在 Go 的 JSON 序列化中，<code>omitempty</code> 匹配的是<strong>零值</strong>（而非仅仅是 nil）。对非指针类型（如 <code>int</code>, <code>string</code>, <code>bool</code>）使用该标签时，如果其值刚好是其零值（如 0、空字符串、false），该字段在 JSON 中将完全不输出。在设计更新 API 时，必须改用**指针类型**来区分“未传值”与“传入了零值”。
         </GotchaCallout>
+
+        <CodeDuel
+          title="PATCH 局部更新：区分零值与未传值"
+          javaCode={`// Java: 属性默认为 null，反序列化易区分
+public class UserUpdateDto {
+    private String nickname; // 未传入时为 null
+    private Integer age;     // 未传入时为 null
+}
+// MyBatis-Plus 支持非空局部更新：updateSelective(dto)`}
+          goCode={`// Go: 必须使用指针类型区分“未传值(nil)”与“显式传零值”
+// ❌ 错误写法：使用普通类型
+type BadUpdateReq struct {
+    Nickname string \`json:"nickname"\` // 若未传入，默认解析为零值 ""
+    Age      int    \`json:"age"\`      // 若未传入，默认解析为零值 0
+} // 无法区分用户是想将 Age 改为 0，还是压根没有传递 Age 属性！
+
+// ✅ 正确写法：使用指针类型
+type GoodUpdateReq struct {
+    Nickname *string \`json:"nickname"\` // 指针零值为 nil，代表未传值；指向 "" 代表显式传空串
+    Age      *int    \`json:"age"\`      // 指针零值为 nil，代表未传值；指向 0 代表用户显式想改成 0 岁
+}
+
+func UpdateUserHandler(c *gin.Context) {
+    var req GoodUpdateReq
+    _ = c.ShouldBindJSON(&req)
+
+    updateData := make(map[string]interface{})
+    if req.Nickname != nil {
+        updateData["nickname"] = *req.Nickname // 解引用获取真实值并更新
+    }
+    if req.Age != nil {
+        updateData["age"] = *req.Age
+    }
+    // GORM 物理更新：db.Model(&User{}).Updates(updateData) 只更新传参字段
+}`}
+          highlights={[
+            { java: '属性默认为 null', go: '指针零值为 nil' },
+            { java: 'MyBatis-Plus selective', go: '通过判断指针是否为 nil 区分未传值与零值' },
+          ]}
+        />
 
         <GoPlayground
           id="web-gin-handler"

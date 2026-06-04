@@ -39,7 +39,7 @@ export default function DatabasePage() {
 
         <CodeDuel
           title="MyBatis-Plus/JPA 映射 vs Go GORM"
-          javaCode={`// Java: JPA 实体注解
+          javaCode={`// Java: JPA/Hibernate 映射声明，支持懒加载（Lazy Loading）等魔法
 @Entity
 @Table(name = "t_user")
 public class User {
@@ -50,23 +50,23 @@ public class User {
     @Column(name = "user_name", nullable = false)
     private String userName;
     
-    // 一对多关系，带有懒加载魔法
+    // 一对多关系，带有延迟加载（LAZY）的动态代理魔法，容易在 Session 关闭后触发 LazyInitializationException
     @OneToMany(fetch = FetchType.LAZY)
     private List<Order> orders;
 }`}
-          goCode={`// Go: GORM 结构体标签映射 (无运行时魔法)
+          goCode={`// Go: GORM 结构体标签映射，零运行时魔法，完全显式
 package model
 
 type User struct {
-    ID       uint   \`gorm:"primaryKey;column:id"\`
-    UserName string \`gorm:"column:user_name;not null"\`
+    ID       uint   \`gorm:"primaryKey;column:id"\`     // 主键映射
+    UserName string \`gorm:"column:user_name;not null"\` // 字段映射
     
-    // 一对多关系，必须显式 Preload 才会加载！
+    // 一对多关系：仅作为结构关联声明。Go 拒绝隐式查询，必须在代码中显式 Preload 才会装填数据！
     Orders   []Order \`gorm:"foreignKey:UserID"\`
 }
 
-// 关联查询示例：
-// db.Preload("Orders").Find(&users) // 显式声明，绝无隐式查询`}
+// 物理关联查询示例：
+// db.Preload("Orders").Find(&users) // 必须显式 Preload，否则 users 中的 Orders 数组长度始终为 0`}
           highlights={[
             { java: 'FetchType.LAZY', go: 'Preload("Orders")' },
             { java: '@Column', go: 'gorm:"column:user_name"' },
@@ -104,21 +104,21 @@ for _, u := range users {
 
         <CodeDuel
           title="Hikari 繁多配置 vs 仅用 3 行设置 Go 连接池"
-          javaCode={`// Java: HikariCP 属性设置
+          javaCode={`// Java: 需要引入 HikariCP 依赖包，繁重的连接池配置
 HikariConfig config = new HikariConfig();
 config.setJdbcUrl("jdbc:mysql://localhost:3306/db");
-config.setMaximumPoolSize(20);
-config.setMinimumIdle(5);
-config.setIdleTimeout(60000);
-config.setConnectionTimeout(30000);
+config.setMaximumPoolSize(20);          // 设置连接池最大物理连接数
+config.setMinimumIdle(5);               // 始终保留的最小空闲连接数
+config.setIdleTimeout(60000);           // 连接空闲释放时间阈值
+config.setConnectionTimeout(30000);     // 获取连接的最长等待超时时间
 HikariDataSource ds = new HikariDataSource(config);`}
-          goCode={`// Go: database/sql 标准内置控制
-db, err := sql.Open("mysql", "user:pwd@tcp(127.0.0.1:3306)/db")
+          goCode={`// Go: 标准库 database/sql 内置开箱即用的并发安全连接池
+db, err := sql.Open("mysql", "user:pwd@tcp(127.0.0.1:3306)/db") // 仅打开句柄，不立即建立物理网络连接
 
-// 仅用 3 个经典 API 完美覆盖连接池策略：
-db.SetMaxOpenConns(20)          // 设置最大活动连接数
-db.SetMaxIdleConns(5)           // 设置最大空闲连接数
-db.SetConnMaxLifetime(time.Hour) // 设置连接的最大存活时间（重连防老连接断开）`}
+// 直接调用底层连接池参数设置 API
+db.SetMaxOpenConns(20)          // 设置数据库最大活动连接数（超出则阻塞等待空闲连接）
+db.SetMaxIdleConns(5)           // 设置池中最大保留的空闲连接数（防范频繁创建/销毁连接的开销）
+db.SetConnMaxLifetime(time.Hour) // 设置单个物理连接的最大存活寿命，重连防防火墙/DB 物理超时断开`}
           highlights={[
             { java: 'HikariDataSource', go: 'sql.Open (内置连接池)' },
             { java: 'setMaximumPoolSize', go: 'SetMaxOpenConns' },
@@ -142,35 +142,36 @@ db.SetConnMaxLifetime(time.Hour) // 设置连接的最大存活时间（重连�
 
         <CodeDuel
           title="@Transactional 失效雷区 vs 显式 3 行回滚保障"
-          javaCode={`// Java: 极其容易失效的 AOP 声明式事务
+          javaCode={`// Java: AOP 声明式事务，完全依赖代理机制，极易静默失效
 @Service
 public class TradeService {
 
-    // ❌ 陷阱：同类内部自调用，事务切面直接失效
+    // ❌ 经典失效陷阱：同类方法内部自调用，绕过了 Spring 代理对象，导致 @Transactional 根本不生效！
     public void startTrade() {
         doTransfer(); 
     }
 
-    @Transactional
+    @Transactional // 此注解依靠动态代理织入事务切面
     public void doTransfer() {
         accountDao.deduct(100);
         accountDao.add(100);
     }
 }`}
-          goCode={`// Go: 显式事务，绝无失效代理
+          goCode={`// Go: 显式手动管理，拒绝黑盒魔法，百分之百可靠
 func (s *TradeService) DoTransfer(ctx context.Context, from, to string, amt float64) error {
-    tx := s.db.Begin() // 1. 显式开启事务
-    defer tx.Rollback() // 2. 挂载默认回滚保护（若中途出错提前 return 会自动触发）
+    tx := s.db.Begin()  // 1. 显式开启数据库事务，获取事务专用的 tx 连接对象
+    defer tx.Rollback() // 2. 核心保护：挂载延迟回滚。如果后续任何地方报错提前 return，或者发生 panic，都会自动触发回滚
 
+    // 执行事务内操作时，必须使用 tx，不能使用全局的 db 连接！
     if err := tx.Deduct(from, amt); err != nil {
-        return err // 发生错误，函数退出，触发 defer 回滚
+        return err // 发生错误，提前退出函数。随后 defer tx.Rollback() 被自动触发执行
     }
 
     if err := tx.Add(to, amt); err != nil {
         return err
     }
 
-    return tx.Commit() // 3. 全部成功后显式提交，此时 Rollback 变为 no-op 
+    return tx.Commit() // 3. 全部操作顺利完成后提交事务。若 Commit 成功，tx.Rollback() 自动成为 no-op 空操作
 }`}
           highlights={[
             { java: '@Transactional', go: 'tx := db.Begin()' },
@@ -314,6 +315,48 @@ func main() {
           ]}
         />
       </section>
+
+        <CodeDuel
+          title="动态 SQL 条件拼接对比"
+          javaCode={`// Java: MyBatis XML 中的动态 SQL 标签
+<select id="findUsers" resultType="User">
+    SELECT * FROM t_user
+    <where>
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="age != null">
+            AND age = #{age}
+        </if>
+    </where>
+</select>`}
+          goCode={`// Go: GORM 链式调用拼接条件，编译期安全且写法灵活
+type QueryParam struct {
+    Name *string // 字符串指针：区分“未传”和“空字符串”
+    Age  *int
+}
+
+func FindUsers(db *gorm.DB, param QueryParam) ([]User, error) {
+    var users []User
+    tx := db.Model(&User{}) // 初始化查询会话，tx 是事务对象副本
+
+    // 动态判断指针并拼接条件
+    if param.Name != nil && *param.Name != "" {
+        tx = tx.Where("name LIKE ?", "%"+*param.Name+"%")
+    }
+    if param.Age != nil {
+        tx = tx.Where("age = ?", *param.Age)
+    }
+
+    // 执行物理查询并装填切片
+    err := tx.Find(&users).Error
+    return users, err
+}`}
+          highlights={[
+            { java: '<if> 动态标签', go: 'if param.Name != nil' },
+            { java: '<where> 自动拼装', go: 'gorm.DB 链式 tx = tx.Where(...)' },
+          ]}
+        />
 
       {/* Chapter Quiz */}
       <ChapterQuiz

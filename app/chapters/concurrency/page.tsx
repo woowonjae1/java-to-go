@@ -54,28 +54,28 @@ export default function ConcurrencyPage() {
 
         <CodeDuel
           title="JVM 线程池 vs Go 协程启动"
-          javaCode={`// Java: 需要通过线程池规避线程创建开销
-ExecutorService pool = Executors.newFixedThreadPool(100);
+          javaCode={`// Java: 由于物理线程创建昂贵，必须通过线程池 (ExecutorService) 规避开销
+ExecutorService pool = Executors.newFixedThreadPool(100); // 声明固定100个物理线程的线程池
 
 for (int i = 0; i < 1000; i++) {
-    final int id = i;
+    final int id = i; // 闭包变量必须是 final
     pool.submit(() -> {
-        System.out.println("执行任务: " + id);
+        System.out.println("执行任务: " + id); // 提交异步任务到线程池队列
     });
 }
-pool.shutdown();
-pool.awaitTermination(1, TimeUnit.MINUTES);`}
-          goCode={`// Go: 随意使用 go 关键字，无需线程池
-var wg sync.WaitGroup
+pool.shutdown(); // 关闭线程池接收通道
+pool.awaitTermination(1, TimeUnit.MINUTES); // 阻塞等待所有提交任务运行完毕`}
+          goCode={`// Go: 协程极度廉价，直接使用 go 关键字，使用 sync.WaitGroup 阻塞同步
+var wg sync.WaitGroup // 声明 WaitGroup 计数器
 
 for i := 0; i < 1000; i++ {
-    wg.Add(1)
-    go func(id int) { // 显式传参规避循环闭包陷阱
-        defer wg.Done()
+    wg.Add(1) // 启动协程前，将 WaitGroup 计数器加 1
+    go func(id int) { // 异步启动匿名函数协程。显式传参 id 规避循环闭包指针捕获地雷
+        defer wg.Done() // 函数退出前自动将 WaitGroup 计数器减 1
         fmt.Println("执行任务:", id)
-    }(i)
+    }(i) // 将当前循环变量的值复制传入协程
 }
-wg.Wait() // 等待所有协程执行完毕`}
+wg.Wait() // 阻塞等待直到 WaitGroup 计数器归零（所有协程全部运行完毕）`}
           highlights={[
             { java: 'ExecutorService pool', go: 'go func()' },
             { java: 'awaitTermination', go: 'sync.WaitGroup' },
@@ -180,34 +180,35 @@ func main() {
 
         <CodeDuel
           title="synchronized vs sync.Mutex"
-          javaCode={`// Java: synchronized 同步块
+          javaCode={`// Java: synchronized 内置监视器锁，支持方法级和代码块级同步
 class SafeCounter {
     private int val = 0;
     
+    // synchronized 隐式获取和释放当前实例的 Monitor 锁
     public synchronized void inc() {
-        val++; // 隐式加锁和自动解锁
+        val++; // 线程安全递增
     }
     
     public synchronized int get() {
         return val;
     }
 }`}
-          goCode={`// Go: 显式锁配合 defer
+          goCode={`// Go: 显式加锁与释放，推荐配合 defer 防止发生崩溃(panic)时遗漏解锁
 type SafeCounter struct {
-    mu  sync.Mutex
+    mu  sync.Mutex // 声明互斥锁成员变量
     val int
 }
 
 func (c *SafeCounter) Inc() {
-    c.mu.Lock()
-    defer c.mu.Unlock() // 确保即使后面发生 panic 也能自动解锁
+    c.mu.Lock()         // 显式加锁
+    defer c.mu.Unlock() // 延迟执行解锁：保证函数退出前（哪怕出现 panic 退出）锁百分之百被释放
     c.val++
 }
 
 func (c *SafeCounter) Get() int {
     c.mu.Lock()
     defer c.mu.Unlock()
-    return c.val
+    return c.val // 读取时也要加锁，防范读写数据竞争
 }`}
           highlights={[
             { java: 'synchronized', go: 'sync.Mutex' },
@@ -270,35 +271,42 @@ func (c *SafeCounter) Get() int {
 
         <CodeDuel
           title="BlockingQueue vs Channel"
-          javaCode={`// Java: BlockingQueue 阻塞队列
-BlockingQueue<String> queue = new LinkedBlockingQueue<>(10);
+          javaCode={`// Java: 使用线程安全的阻塞队列 (BlockingQueue) 进行生产者消费者通信
+BlockingQueue<String> queue = new LinkedBlockingQueue<>(10); // 声明容量为 10 的队列
 
-// 生产者
+// 生产者线程
 new Thread(() -> {
     try {
-        queue.put("hello"); // 阻塞写入
-    } catch (InterruptedException e) {}
+        queue.put("hello"); // 阻塞式写入队列，若队列满则线程阻塞挂起
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
 }).start();
 
-// 消费者
+// 消费者线程
 new Thread(() -> {
     try {
-        String data = queue.take(); // 阻塞读取
-    } catch (InterruptedException e) {}
+        String data = queue.take(); // 阻塞式读取队列，若队列空则线程阻塞挂起
+        System.out.println(data);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
 }).start();`}
-          goCode={`// Go: 内置的一等公民 Channel
-ch := make(chan string, 10) // 创建带缓冲区大小为 10 的通道
+          goCode={`// Go: Channel 是语言级别内置的一等公民，使用 CSP 并发模型
+ch := make(chan string, 10) // make 创建一个容量为 10 的缓冲通道 (buffered channel)
 
-// 生产者
+// 生产者协程
 go func() {
-    ch <- "hello" // 写入通道
-    close(ch)     // 发送完毕，关闭通道
+    ch <- "hello" // 将字符串发送写入通道，若通道缓冲区满，当前协程阻塞挂起
+    close(ch)     // 发送完成后必须显式关闭通道，防止对端 range 陷入永久死锁阻塞
 }()
 
-// 消费者：利用 range 自动监听并在关闭后安全退出循环
+// 消费者协程
 go func() {
+    // 使用 range 关键字在通道上进行循环遍历迭代。
+    // range 会阻塞读取，并且在通道被 close 且数据被读完后，自动退出循环，安全优雅
     for data := range ch {
-        fmt.Println(data) // 阻塞读取并消费
+        fmt.Println(data) // 消费并打印读取的数据
     }
 }()`}
           highlights={[
@@ -324,21 +332,23 @@ go func() {
 
         <CodeDuel
           title="异步联合超时控制"
-          javaCode={`// Java: 极其繁琐的 Future 超时控制
-CompletableFuture<String> task = fetchRemote();
+          javaCode={`// Java: 极其繁琐的 Future 超时控制与强制线程打断
+CompletableFuture<String> task = fetchRemote(); // 触发异步请求
 try {
-    String res = task.get(3, TimeUnit.SECONDS);
+    String res = task.get(3, TimeUnit.SECONDS); // 阻塞当前线程，最多等待 3 秒
 } catch (TimeoutException e) {
-    task.cancel(true); // 物理中断线程（非常不推荐）
+    task.cancel(true); // 超时后尝试物理中断异步工作线程（往往不成功且存在线程安全隐患）
+} catch (Exception e) {
+    // 捕获其余异常
 }`}
-          goCode={`// Go: 优雅的 select 多路监听
+          goCode={`// Go: 优雅的非阻塞 select 监听，物理级级联超时打断
 ch := fetchRemote() // 返回一个接收结果的通道
 
 select {
 case res := <-ch:
-    fmt.Println("获取到结果:", res)
-case <-time.After(3 * time.Second): // 3秒后该通道会发来信号
-    fmt.Println("请求超时！丢弃处理")
+    fmt.Println("获取到结果:", res) // 通道先收到结果，打印并正常退出
+case <-time.After(3 * time.Second): // time.After 内部定时器在 3 秒后会向返回的只读通道发送当前时间
+    fmt.Println("请求超时！丢弃处理") // 3 秒内未收到结果，自动进入超时分支
 }`}
           highlights={[
             { java: 'task.get', go: 'select / case' },
@@ -366,32 +376,34 @@ case <-time.After(3 * time.Second): // 3秒后该通道会发来信号
 
         <CodeDuel
           title="ThreadLocal 魔法 vs 显式 Context 链"
-          javaCode={`// Java: 隐式线程绑定
+          javaCode={`// Java: 隐式线程上下文绑定，仅限于单线程模型或阻塞式容器
 public class LogInterceptor {
+    // 声明静态 ThreadLocal 存储 TraceId，在同一个物理线程内共享
     private static final ThreadLocal<String> traceId = new ThreadLocal<>();
 
     public void before(String id) {
-        traceId.set(id); // 绑定到当前线程
+        traceId.set(id); // 绑定到当前请求处理物理线程
     }
 
     public void doBusiness() {
-        String id = traceId.get(); // 任意深层直接获取
+        String id = traceId.get(); // 可以在代码链条的任意深处直接静态获取
         System.out.println("Trace: " + id);
     }
 }`}
-          goCode={`// Go: 显式 Context 传递
+          goCode={`// Go: 显式参数传递 Context，跨协程(Goroutine)调度安全可靠
 package business
 
 func ProcessRequest(ctx context.Context, req *Request) {
-    traceID := ctx.Value("trace_id").(string) // 强类型断言取出
+    // 强制类型断言，从 context 中取出 TraceID 诊断元数据
+    traceID := ctx.Value("trace_id").(string) 
     fmt.Println("Trace:", traceID)
 
-    // 层层传递
+    // 层层传递：将包含上下文控制属性的 ctx 显式作为第一个参数传入下级函数
     QueryDB(ctx, req.UserID)
 }
 
 func QueryDB(ctx context.Context, userID string) {
-    // 若 ctx 被上层取消（如超时），底层底层驱动会自动打断 SQL 执行！
+    // 若上层 ctx 被取消（如 API 超时），底层数据库驱动监听 ctx.Done() 会物理强制打断正在执行的 SQL 语句，避免连接池占满！
     rows, err := db.QueryContext(ctx, "SELECT...", userID)
 }`}
           highlights={[
@@ -481,6 +493,52 @@ func main() {
           ]}
         />
       </section>
+
+        <CodeDuel
+          title="Goroutine 泄露防护模式"
+          javaCode={`// Java: 线程池任务阻塞挂起 (如 HTTP 请求悬挂)
+// 线程会一直被占用，直到 Socket 超时。若线程池满则引发拒绝策略
+ExecutorService executor = Executors.newFixedThreadPool(10);
+executor.submit(() -> {
+    // 模拟无限期网络挂起或死锁，占用线程池中的宝贵线程
+    HttpURLConnection conn = (HttpURLConnection) new URL("http://hang.com").openConnection();
+    conn.getInputStream().read(); // 永久阻塞
+});`}
+          goCode={`// Go: 协程通道发送阻塞导致泄露，以及使用 Select/Context 兜底防护
+func Worker() {
+    ch := make(chan string) // ❌ 无缓冲通道
+
+    go func() {
+        // 执行某项业务，并将结果发送至 ch
+        ch <- "result" // ❌ 发送端会永久阻塞在此处，如果接收端（外层）已经超时退出不再接收！
+        // 此时，该子协程将永久残留内存中，无法被 GC 回收，导致 Goroutine 泄露！
+    }()
+}
+
+// ✅ 解决方案一：使用带缓冲的通道 (Buffered Channel)
+func SafeWorker1() {
+    ch := make(chan string, 1) // 声明容量为 1 的缓冲通道，允许即使无接收端也能发送一次不阻塞
+    go func() {
+        ch <- "result" // 发送后子协程能正常退出，GC 随后会正常回收资源
+    }()
+}
+
+// ✅ 解决方案二：使用 Select 监听 Done 通道实现主动取消
+func SafeWorker2(ctx context.Context) {
+    ch := make(chan string)
+    go func() {
+        select {
+        case ch <- "result": // 成功发送
+        case <-ctx.Done():  // 若上层上下文取消/超时，子协程物理中断并退出，安全！
+            return
+        }
+    }()
+}`}
+          highlights={[
+            { java: '线程池满拒绝策略', go: '协程永久阻塞导致内存泄漏' },
+            { java: '依靠外部物理打断', go: 'ch := make(chan string, 1) 缓冲或 select/ctx.Done()' },
+          ]}
+        />
 
       {/* Chapter Quiz */}
       <ChapterQuiz

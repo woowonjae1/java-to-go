@@ -47,41 +47,44 @@ export default function OOPPage() {
 
         <CodeDuel
           title="Class 封装 vs Struct 导出"
-          javaCode={`// Java: 属性封装 + Getter/Setter
+          javaCode={`// Java: 显式封装，使用 private 属性配合 Getter/Setter 模板方法
 public class Account {
-    private String id;
-    private double balance;
+    private String id;        // 私有字段：只能类内部访问
+    private double balance;   // 私有字段：存储余额
 
+    // 构造器初始化属性
     public Account(String id, double balance) {
         this.id = id;
         this.balance = balance;
     }
 
+    // Getter/Setter 样板代码
     public String getId() { return id; }
     
     public double getBalance() { return balance; }
     
+    // 业务方法：带入参合法性校验的修改
     public void deposit(double amt) {
         if (amt > 0) this.balance += amt;
     }
 }`}
-          goCode={`// Go: 首字母大写导出，小写私有
+          goCode={`// Go: 用字段首字母大小写判定包级别可见性，无需样板 getter/setter 
 package bank
 
 type Account struct {
-    ID      string    // 首字母大写：公开字段，外部直接读写
-    balance float64   // 首字母小写：包内私有，外部不可见
+    ID      string    // 首字母大写：导出字段（公开），外部包可以直接读写该字段
+    balance float64   // 首字母小写：未导出字段（包私有），只有 bank 包内部的函数或方法可以读写它
 }
 
-// 构造工厂函数 (习惯命名为 NewXxx)
+// 构造函数：Go 没有 class 构造器，习惯使用 New + 结构体名 的导出函数实例化结构体指针
 func NewAccount(id string, initial float64) *Account {
-    return &Account{ID: id, balance: initial}
+    return &Account{ID: id, balance: initial} // 返回堆分配的结构体指针
 }
 
-// 方法：通过指针接收者修改 balance
+// 接收者方法：利用指针接收者 (*Account) 才能直接修改结构体内部的值
 func (a *Account) Deposit(amt float64) {
     if amt > 0 {
-        a.balance += amt // 外部无法直接修改 a.balance
+        a.balance += amt // 修改包私有字段 balance，由于是内部方法，可以安全读写
     }
 }`}
           highlights={[
@@ -195,30 +198,30 @@ Withdraw 80: true, remaining: 70.0`}
 
         <CodeDuel
           title="继承多态 vs 嵌入组合"
-          javaCode={`// Java: extends 具有类型兼容性
+          javaCode={`// Java: class 继承，具有物理父子类型兼容性（可向上转型）
 class Engine {
     void start() { System.out.println("Vroom"); }
 }
 
 class Car extends Engine {
-    // 继承了 start()
+    // 自动继承了父类的 start() 方法
 }
 
-Engine e = new Car();         // 向上转型（多态）
-e.start();`}
-          goCode={`// Go: 嵌入只是字段提升语法糖
+Engine e = new Car();         // 向上转型（多态性）：Car 实例被当成 Engine 引用使用
+e.start();                    // 执行的是继承自 Engine 的方法`}
+          goCode={`// Go: 嵌套（嵌入）只是语法糖，没有父子继承关系，类型不兼容
 type Engine struct{}
 
 func (e *Engine) Start() { fmt.Println("Vroom") }
 
 type Car struct {
-    Engine                     // 匿名嵌入
+    Engine                     // 匿名嵌入：Engine 的属性与方法会自动提升到 Car 的层级
 }
 
 c := Car{}
-c.Start()                      // 自动“提升”：相当于 c.Engine.Start()
+c.Start()                      // 方法提升语法糖：底层实际自动调用 c.Engine.Start()
 
-// ❌ 编译错误！Car 不是 Engine 类型
+// ❌ 编译错误！Go 在物理上没有任何向上转型。Car 与 Engine 是两个完全独立不兼容的类型
 // var e Engine = Car{} `}
           highlights={[
             { java: 'class Car extends Engine', go: 'Engine (匿名嵌入)' },
@@ -245,6 +248,47 @@ c.Parent.Print() // 打印 "Parent" （显式调用）
         >
           Go 的结构体嵌入不能实现真正的虚方法调用（Dynamic Dispatch）。当外层结构体“重写”内层方法时，内层结构体自己的其他内部调用**不会**跳转到外层重写的方法。它依然是物理的嵌套关系，而非继承树。
         </GotchaCallout>
+
+        <CodeDuel
+          title="编译期接口检查与命名遮蔽"
+          javaCode={`// Java: 由 implements 关键字在编译期强制校验实现关系
+public class FileReader implements Reader {
+    @Override
+    public String readData() { return "data"; }
+}
+
+// 嵌套同名方法遮蔽 (Java 不支持这种匿名多重继承，故不存在同名隐式遮蔽，必须显式重写并分发)
+class ParentA { void show() {} }
+// Java 不能 class Child extends ParentA, ParentB`}
+          goCode={`// Go: 编译期显式校验契约 & 解决嵌套遮蔽冲突
+type Reader interface {
+    ReadData() string
+}
+
+type FileReader struct{}
+func (f *FileReader) ReadData() string { return "data" }
+
+// ✅ 最佳实践：利用空指针赋值在编译期强行进行接口实现检查
+// 如果 FileReader 未实现 Reader 接口的全部方法，编译会当场报错，绝不拖延到运行时
+var _ Reader = (*FileReader)(nil) 
+
+// 嵌套命名遮蔽与解决：
+type Logger struct{}
+func (l *Logger) Log(msg string) { fmt.Println("Log:", msg) }
+
+type Worker struct {
+    Logger // 匿名嵌套：Log 方法被提升到 Worker
+}
+// Worker 自身实现同名 Log 方法，导致嵌入的 Logger.Log 被“遮蔽”
+func (w *Worker) Log(msg string) {
+    fmt.Println("Worker custom log:", msg)
+    w.Logger.Log(msg) // ✅ 显式加上内嵌结构体类型名，即可调用被遮蔽的方法
+}`}
+          highlights={[
+            { java: 'implements Reader', go: 'var _ Reader = (*FileReader)(nil)' },
+            { java: 'Java 不允许多重继承同名冲突', go: 'w.Logger.Log(msg) 显式分发' },
+          ]}
+        />
       </section>
 
       {/* Section 3: Interfaces */}
@@ -263,28 +307,28 @@ c.Parent.Print() // 打印 "Parent" （显式调用）
 
         <CodeDuel
           title="显式 implements vs 鸭子类型"
-          javaCode={`// Java: 强绑定契约
+          javaCode={`// Java: 强绑定契约，实现类必须声明 implements
 interface Reader {
     String readData();
 }
 
-// 必须声明 implements，否则无法向上转型
+// 必须声明 implements，否则无法向上转型为 Reader 接口变量
 class FileReader implements Reader {
     public String readData() { return "data"; }
 }`}
-          goCode={`// Go: 自动隐式契约
+          goCode={`// Go: 自动隐式契约（鸭子类型）
 type Reader interface {
     ReadData() string
 }
 
 type FileReader struct{}
 
-// 没有任何 "implements Reader" 的痕迹
+// 没有任何 "implements Reader" 的物理声明痕迹
 func (f FileReader) ReadData() string {
     return "data"
 }
 
-// 只要FileReader定义了该方法，即可隐式转换：
+// 只要 FileReader 结构体定义了 Reader 接口所需的全部方法，就可以隐式转换：
 var r Reader = FileReader{}`}
           highlights={[
             { java: 'implements Reader', go: '(隐式绑定)' },
@@ -345,36 +389,36 @@ var r Reader = FileReader{}`}
 
         <CodeDuel
           title="Spring DI 反射 vs Go 构造注入"
-          javaCode={`// Java: Spring 运行时反射自动扫描并注入
+          javaCode={`// Java: Spring 运行时依赖注入容器，依靠反射和 AOP 代理动态装配
 @Service
 public class UserService {
     @Autowired
-    private UserDao userDao; // 隐式自动装配
+    private UserDao userDao; // 隐式自动装配，对开发隐藏了连线关系，必须由 Spring 容器启动才能测试
     
     public void register(String name) {
         userDao.save(name);
     }
 }`}
-          goCode={`// Go: 显式连线（无需运行时反射容器）
+          goCode={`// Go: 显式手工构造注入，彻底消除依赖魔法，便于独立单元测试
 package service
 
 type UserService struct {
-    userDao db.UserDao // 显式字段，常通过接口声明
+    userDao db.UserDao // 显式声明依赖字段（通常为接口，便于 Mock 测试）
 }
 
-// 显式构造注入
+// 显式构造函数（注入依赖）
 func NewUserService(dao db.UserDao) *UserService {
     return &UserService{userDao: dao}
 }
 
 func (s *UserService) Register(name string) {
-    s.userDao.Save(name)
+    s.userDao.Save(name) // 直接调用成员方法
 }
 
-// ---- main.go 中手动拼装 ----
+// ---- main.go 中手动进行 Wire 装配 ----
 func main() {
-    dao := db.NewSQLUserDao()
-    svc := service.NewUserService(dao) // 彻底消除依赖魔法，结构清晰
+    dao := db.NewSQLUserDao()          // 实例化数据访问层
+    svc := service.NewUserService(dao) // 显式组装 UserService，关系一目了然
     svc.Register("Bob")
 }`}
           highlights={[

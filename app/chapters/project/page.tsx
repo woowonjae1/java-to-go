@@ -73,6 +73,85 @@ require (
           ]}
         />
 
+        <h3 className="text-lg font-semibold mt-6 text-foreground/90">【最基础】组件装配：Spring @Autowired 反射魔法 vs Go 显式依赖注入</h3>
+        <p className="text-muted-fg leading-relaxed">
+          Spring 框架通过运行时反射扫描 Bean 定义，并在 IoC 容器中自动组装依赖（使用 <code>@Autowired</code> 或 <code>@Resource</code>）。
+          Go 秉承<strong>无魔法、显式化</strong>原则，推荐在项目入口点（如 <code>main.go</code>）手动调用各层的构造函数，自底向上完成装配，这让依赖路径、控制反转变得绝对透明清晰。
+        </p>
+
+        <CodeDuel
+          title="Spring @Autowired 动态装配 vs Go 手动显式依赖注入"
+          javaCode={`// Java: Spring Boot 依靠反射与 IoC 容器进行隐式注入
+@RestController
+@RequestMapping("/user")
+public class UserController {
+    // 1. 通过 @Autowired 声明依赖，Spring 容器启动时通过反射动态注入 UserService 实例
+    @Autowired
+    private UserService userService;
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody UserDTO dto) {
+        // 2. 调用业务逻辑
+        userService.register(dto);
+        return ResponseEntity.ok("success");
+    }
+}`}
+          goCode={`// Go: 显式构造函数组装依赖，去除“容器魔法”，完全控制生命周期与依赖关系
+package main
+
+import (
+	"context"
+	"net/http"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// 1. 定义数据持久层 Repository 结构体，显式持有 GORM 数据库指针
+type UserRepository struct {
+	db *gorm.DB
+}
+
+// 供外部创建实例的构造函数
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
+// 2. 定义业务逻辑层 Service 结构体，显式持有 Repository 依赖
+type UserService struct {
+	repo *UserRepository
+}
+
+// 构造函数：注入所需的 Repository 依赖
+func NewUserService(repo *UserRepository) *UserService {
+	return &UserService{repo: repo}
+}
+
+func main() {
+	// 3. 在入口 main 函数中，显式、自底向上进行组件装配
+	var db *gorm.DB = initDatabase() // 初始化 GORM 数据库连接
+	
+	userRepo := NewUserRepository(db) // 组装 Repo，注入 db
+	userSvc := NewUserService(userRepo) // 将 Repo 注入 Service
+	
+	r := gin.Default()
+	// 4. 控制器显式闭包或结构体注入依赖
+	r.POST("/user/register", func(c *gin.Context) {
+		// 直接调用已被显式组装好的业务服务
+		_ = userSvc.repo.db // 依赖路径清晰可见，无反射隐式加载
+		c.JSON(http.StatusOK, gin.H{"status": "success"})
+	})
+	r.Run(":8080")
+}
+
+func initDatabase() *gorm.DB {
+	return &gorm.DB{} // 模拟初始化
+}`}
+          highlights={[
+            { java: '@Autowired 自动反射注入', go: 'NewUserRepository/NewUserService 显式组装' },
+            { java: 'Spring IoC 容器托管', go: '在 main.go 中统一自底向上配置，生命周期透明' },
+          ]}
+        />
+
         <h3 className="text-lg font-semibold mt-6 text-foreground/90">【中等】Mono-repo 目录结构与基于 Viper 的多环境 YAML 显式配置加载</h3>
         <p className="text-muted-fg leading-relaxed">
           Spring Boot 利用激活的 Profile 隐式自动拼装加载 <code>application-dev.yml</code>。Go 提倡一切显式化。我们使用 Mono-repo 扁平包结构，并利用 <code>spf13/viper</code> 库，在服务启动时显式解析配置。
@@ -228,6 +307,110 @@ type ConversationMessage struct {
           ]}
         />
 
+        <h3 className="text-lg font-semibold mt-6 text-foreground/90">【基础】API 接收与响应：Spring MVC @RestController vs Gin Route & JSON Bind</h3>
+        <p className="text-muted-fg leading-relaxed">
+          Java Spring Boot 中通过控制器接收 JSON 请求并自动反序列化为实体或 DTO，使用 <code>@RequestBody</code> 结合 Spring Web 的 Mapping 注解。
+          Go 提倡显式绑定与显式控制，使用 Gin Web 框架配合结构体 tag (如 <code>json</code> 和 <code>binding</code>)，使用指针将请求体绑定到结构体实例。
+        </p>
+
+        <CodeDuel
+          title="Spring MVC @RestController API vs Gin Route & Binding"
+          javaCode={`// Java: Spring MVC 声明式控制器
+@RestController
+@RequestMapping("/api/chat")
+public class ChatController {
+    @PostMapping("/send")
+    public ResponseEntity<?> sendMessage(@RequestBody MessageDTO dto) {
+        if (dto.getText() == null || dto.getText().isEmpty()) {
+            return ResponseEntity.badRequest().body("text cannot be empty");
+        }
+        return ResponseEntity.ok(new Response("success", 200));
+    }
+}`}
+          goCode={`// Go: Gin 路由与指针绑定校验，显式返回 JSON
+type MessageReq struct {
+	Text string \`json:"text" binding:"required"\`
+}
+
+func RegisterChatRoutes(r *gin.Engine) {
+	r.POST("/api/chat/send", func(c *gin.Context) {
+		var req MessageReq
+		// 显式指针绑定并校验
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": "success", "code": 200})
+	})
+}`}
+          highlights={[
+            { java: '@RequestBody 自动解析', go: 'ShouldBindJSON(&req) 指针映射绑定' },
+            { java: 'ResponseEntity.ok', go: 'c.JSON 显式序列化回写' },
+          ]}
+        />
+
+        <h3 className="text-lg font-semibold mt-6 text-foreground/90">【基础】单表数据库操作：MyBatis-Plus CRUD 隐式继承 vs GORM 显式指针操控</h3>
+        <p className="text-muted-fg leading-relaxed">
+          MyBatis-Plus 通过让 Mapper 接口继承 <code>BaseMapper&lt;T&gt;</code>，在编译/运行期动态生成全套单表 CRUD 动作。
+          GORM 则提倡通过 GORM 数据库实例（<code>*gorm.DB</code>）配合结构体指针直接进行操作。在 Go 中执行查询或插入时，必须传入<strong>实体指针</strong>，以便 GORM 将操作后的自增 ID 或结果数据集直接回写到对应内存中。
+        </p>
+
+        <CodeDuel
+          title="MyBatis-Plus 单表 CRUD vs GORM 指针查询与插入"
+          javaCode={`// Java: MyBatis-Plus 通过继承 BaseMapper 提供单表 CRUD
+@Service
+public class UserService {
+    @Autowired
+    private UserMapper userMapper; // 继承自 BaseMapper<UserEntity>
+
+    public UserEntity getUserAndInsert(UserEntity newUser, Long id) {
+        // 1. 插入新记录，MyBatis-Plus 会自动将自增 ID 填充回实体对象中
+        userMapper.insert(newUser);
+        
+        // 2. 根据主键 ID 进行单表查询
+        return userMapper.selectById(id);
+    }
+}`}
+          goCode={`// Go: GORM 显式传入指针完成单表操作，将结果回写到对应结构体中
+package service
+
+import (
+	"context"
+	"gorm.io/gorm"
+)
+
+type User struct {
+	ID   int64  \`gorm:"primaryKey;column:id"\`
+	Name string \`gorm:"column:name"\`
+}
+
+type UserService struct {
+	db *gorm.DB
+}
+
+func (s *UserService) GetUserAndInsert(ctx context.Context, newUser *User, id int64) (*User, error) {
+	// 1. 插入新记录。必须传入实体指针（&newUser），GORM 会在插入成功后，将主键自增 ID 写入该指针指向的对象中
+	err := s.db.WithContext(ctx).Create(newUser).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var user User
+	// 2. 根据主键查询。必须传入结果结构体的指针 &user
+	// First 会自动添加 LIMIT 1，并且如果未找到记录会返回 gorm.ErrRecordNotFound 错误
+	err = s.db.WithContext(ctx).First(&user, id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}`}
+          highlights={[
+            { java: 'userMapper.insert(newUser)', go: 'db.Create(newUser) 传入结构体指针' },
+            { java: 'userMapper.selectById(id)', go: 'db.First(&user, id) 显式反射回填数据' },
+          ]}
+        />
+
         <h3 className="text-lg font-semibold mt-6 text-foreground/90">【中等】数据库复杂 JSONB 类型在 Go 中的 Scanner/Valuer 实现</h3>
         <p className="text-muted-fg leading-relaxed">
           Java <code>ConversationMessageEntity</code> 中包含 <code>raw_payload</code> 字段（用来存储插件回调的原始 Payload，为 JSONB 格式）。Java 通常要写自定义的 MyBatis <code>TypeHandler</code>。在 Go 中，我们只需要实现标准库 <code>database/sql/driver</code> 的 <code>Valuer</code> 与 <code>Scanner</code> 接口：
@@ -378,6 +561,82 @@ func GenerateToken(userID int64, loginType string, secret []byte) (string, error
 }`}
         </pre>
 
+        <h3 className="text-lg font-semibold mt-6 text-foreground/90">【中等】会话隔离机制：Java ThreadLocal 隐式变量 vs Go Context 显式传递</h3>
+        <p className="text-muted-fg leading-relaxed">
+          Java Spring Boot 中常通过静态 <code>ThreadLocal</code> (例如在拦截器里设置) 在当前线程的生命周期内共享用户信息。
+          由于 Go 的 Goroutine 是非绑定的，底层可能会在不同线程间切换，因此不支持 ThreadLocal 机制。Go 推荐将用户信息显式存入 <code>context.Context</code> 并在 Service 与 Repository 各层中显式传递。
+        </p>
+
+        <CodeDuel
+          title="ThreadLocal 静态绑定 vs context.Context 显式级联传递"
+          javaCode={`// Java: 使用 ThreadLocal 存储当前线程的上下文信息
+public class UserContext {
+    private static final ThreadLocal<Long> userContext = new ThreadLocal<>();
+    
+    public static void setUserId(Long userId) {
+        userContext.set(userId);
+    }
+    
+    public static Long getUserId() {
+        return userContext.get();
+    }
+    
+    public static void clear() {
+        userContext.remove();
+    }
+}
+
+// 业务层不需要显式传参，直接静态获取
+@Service
+public class OrderService {
+    public void createOrder() {
+        Long userId = UserContext.getUserId(); // 隐式获取当前线程对应的用户ID
+        // ...
+    }
+}`}
+          goCode={`// Go: 显式在 Context 中注入并读取用户上下文，各层函数必须首参显式传参
+package service
+
+import (
+	"context"
+	"errors"
+)
+
+type contextKey string
+const userKey contextKey = "userId"
+
+// 注入用户ID到上下文
+func WithUserID(ctx context.Context, userID int64) context.Context {
+	return context.WithValue(ctx, userKey, userID)
+}
+
+// 提取上下文中的用户ID
+func GetUserID(ctx context.Context) (int64, error) {
+	userID, ok := ctx.Value(userKey).(int64)
+	if !ok {
+		return 0, errors.New("user ID not found in context")
+	}
+	return userID, nil
+}
+
+type OrderService struct{}
+
+func (s *OrderService) CreateOrder(ctx context.Context) error {
+	// 显式从 context 传参中读取关联属性
+	userID, err := GetUserID(ctx)
+	if err != nil {
+		return err
+	}
+	// 使用 userID 执行下单逻辑...
+	_ = userID
+	return nil
+}`}
+          highlights={[
+            { java: 'ThreadLocal.get() 静态无参调用', go: 'ctx.Value() 显式在 context 首参中传递读取' },
+            { java: '单线程绑定 (隐式)', go: '基于 Context 的协程安全显式级联透传' },
+          ]}
+        />
+
         <h3 className="text-lg font-semibold mt-6 text-foreground/90">【中等】双端 JWT 拦截与 go-redis 黑名单状态联动中间件</h3>
         <p className="text-muted-fg leading-relaxed">
           利用 Gin 管道式中间件（Middleware），我们截获客户端上报的 JWT 头，判定业务隔离逻辑，并通过 Redis 实时校核该 Token 是否在注销或冻结黑名单中：
@@ -502,6 +761,81 @@ func (m *UserCacheManager) GetUserStatusCached(ctx context.Context, userID int64
         <p className="text-muted-fg leading-relaxed">
           在 Java 中，高并发往往需要庞大的线程池（Thread Pool）支撑。在 Go 中，协程极其轻量且默认异步化，这使得高频请求的 I/O 处理非常廉价。
         </p>
+
+        <h3 className="text-lg font-semibold mt-6 text-foreground/90">【中等】AI 下游流式 API 管道化转发：Spring WebFlux 响应式 vs Go HTTP Client & Body Reader 管道化</h3>
+        <p className="text-muted-fg leading-relaxed">
+          在大模型流式生成（SSE）场景下，服务端不仅要自己能产生流，更需要请求下游第三方大模型接口（如 OpenAI），并将响应数据实时流式透明转发给前端。
+          Java 往往推荐使用响应式编程库 WebFlux 的 <code>WebClient</code>，返回 <code>Flux&lt;String&gt;</code> 进行处理；
+          Go 则依然推崇极简的“数据物理管道”思想，在发起下游 HTTP 请求后，直接利用标准库的 <code>bufio.NewReader</code> 逐行读取并即时写回 HTTP 响应管道。
+        </p>
+
+        <CodeDuel
+          title="Spring WebFlux WebClient 转发 vs Go Http Body Reader 管道化转发"
+          javaCode={`// Java: Spring WebFlux 使用 WebClient 异步接收下游大模型流并转发
+@GetMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+public Flux<String> streamChat(@RequestParam String prompt) {
+    // 1. 使用 WebClient 请求大模型服务端的 Stream 接口
+    return webClient.post()
+        .uri("/v1/chat/completions")
+        .bodyValue(new ChatRequest(prompt))
+        .retrieve()
+        .bodyToFlux(String.class) // 2. 将下游 SSE 转化为响应式 Flux 流
+        .map(data -> "data: " + data + "\\n\\n") // 3. 重新包装为标准 SSE 格式输出给前端
+        .onErrorResume(e -> Flux.just("data: [ERROR]\\n\\n"));
+}`}
+          goCode={`// Go: 使用原生 http.Client 读取下游响应体流，非阻塞逐行读取并写入 Gin Stream 中
+package controller
+
+import (
+	"bufio"
+	"bytes"
+	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"github.com/gin-gonic/gin"
+)
+
+func StreamAIResponse(c *gin.Context) {
+	// 1. 构造请求并注入上游 Context 建立超时链路级联绑定
+	payload, _ := json.Marshal(map[string]string{"prompt": c.Query("prompt")})
+	req, _ := http.NewRequestWithContext(c.Request.Context(), "POST", "https://api.openai.com/v1/chat/completions", bytes.NewReader(payload))
+	
+	// 2. 发起 HTTP 请求
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	defer resp.Body.Close() // 3. 必须 defer 关闭响应体以防止连接泄露
+
+	// 4. 设置流式 HTTP Response 头部
+	c.Header("Content-Type", "text/event-stream")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+
+	// 5. 使用 bufio.Reader 逐行读取大模型响应流，避免全量读入内存导致 OOM
+	reader := bufio.NewReader(resp.Body)
+	c.Stream(func(w io.Writer) bool {
+		// 6. 逐行读取数据（以 \\n 结尾）
+		line, err := reader.ReadBytes('\\n')
+		if err != nil {
+			if err == io.EOF {
+				return false // 下游流结束，正常退出
+			}
+			return false // 读取异常，断开连接
+		}
+		
+		// 7. 直接将原始 SSE 数据帧转发写回给前端客户端
+		_, _ = w.Write(line)
+		return true // 继续下一轮循环读取
+	})
+}`}
+          highlights={[
+            { java: 'WebClient + Flux<String> 响应式流', go: 'http.Client + bufio.Reader 逐行物理管道' },
+            { java: '依赖 RxJava/Reactor 反应式链条', go: 'c.Stream 闭包循环，物理控制极其直观' },
+          ]}
+        />
 
         <h3 className="text-lg font-semibold mt-6 text-foreground/90">【中等】基于 Channel 和 Select 搭建高性能 SSE 流式 API</h3>
         <p className="text-muted-fg leading-relaxed">
@@ -712,6 +1046,82 @@ func StartConcurrentMQWorkers(conn *amqp091.Connection, queueName string, worker
 	}
 }`}
         </pre>
+
+        <h3 className="text-lg font-semibold mt-6 text-foreground/90">【中等】连接容灾控制：Spring AMQP 底层自愈机制 vs Go 监听关闭重连死循环</h3>
+        <p className="text-muted-fg leading-relaxed">
+          在大规模生产环境中，网络瞬间抖动断连是常态。Java Spring AMQP (RabbitMQ) 内部具备完善的断线自动恢复机制（<code>spring.rabbitmq.listener.simple.auto-startup</code>）。
+          但在 Go 的 <code>amqp091-go</code> 库中，一旦物理 TCP 连接断开，原有的 Channel 与 Connection 实例会立刻失效并且<strong>不会自动重建</strong>。我们必须注册 <code>NotifyClose</code> 监听信道关闭事件，并套在外层 <code>for</code> 死循环中手动完成连接与消费者信道的级联重构。
+        </p>
+
+        <CodeDuel
+          title="Spring 自动连接恢复 vs Go NotifyClose 显式重连循环"
+          javaCode={`// Java: Spring AMQP 在底层封装了自愈恢复机制
+// 我们仅需配置超时，框架会在连接意外断开后自动尝试重建 Connection 和 Channel 并重绑监听器
+spring.rabbitmq.connection-timeout=60000
+spring.rabbitmq.listener.simple.retry.enabled=true
+spring.rabbitmq.listener.simple.retry.max-attempts=3
+spring.rabbitmq.listener.simple.retry.initial-interval=5000ms`}
+          goCode={`// Go: 显式利用 NotifyClose 信号在死循环中重置并重建连接与订阅通道
+package mq
+
+import (
+	"log"
+	"time"
+	"github.com/rabbitmq/amqp091-go"
+)
+
+func StartReconnectingConsumer(amqpURL string, queueName string) {
+	for {
+		log.Printf("Connecting to RabbitMQ: %s", amqpURL)
+		conn, err := amqp091.Dial(amqpURL)
+		if err != nil {
+			log.Printf("Failed to connect, retry after 5s: %v", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		ch, err := conn.Channel()
+		if err != nil {
+			conn.Close()
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		// 1. 创建用于监听连接意外关闭事件的 Go Channel
+		closeCh := make(chan *amqp091.Error)
+		conn.NotifyClose(closeCh)
+
+		msgs, err := ch.Consume(queueName, "", false, false, false, false, nil)
+		if err != nil {
+			ch.Close()
+			conn.Close()
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		// 2. 启动异步 Goroutine 处理消息
+		go func() {
+			for d := range msgs {
+				// 执行具体业务逻辑并应答
+				d.Ack(false)
+			}
+		}()
+
+		// 3. 阻塞在此处。一旦网络或 Broker 发生故障导致 TCP 链路物理关闭，
+		// closeCh 会抛出关闭原因的错误对象，从而打破阻塞解除挂起
+		errReason := <-closeCh
+		log.Printf("RabbitMQ Connection lost: %v. Initiating reconnection...", errReason)
+		
+		// 自动级联清理旧句柄，然后重新进入 for 循环重建环境
+		_ = ch.Close()
+		_ = conn.Close()
+	}
+}`}
+          highlights={[
+            { java: 'spring.rabbitmq 自动配置自愈', go: 'closeCh := make(chan *amqp091.Error) 监听事件' },
+            { java: '框架自动重声明与消费者注册', go: '在外层套用 for { ... } 死循环机制手工拉起链路' },
+          ]}
+        />
 
         <h3 className="text-lg font-semibold mt-6 text-foreground/90">【高级】核心支付业务：Stripe Webhook 签名与 Redis 分布式防重入事务控制</h3>
         <p className="text-muted-fg leading-relaxed">

@@ -47,25 +47,27 @@ export default function ErrorsPage() {
 
         <CodeDuel
           title="隐式异常冒泡 vs 显式当场处理"
-          javaCode={`// Java: 隐式流，出错时被打断并跳出
+          javaCode={`// Java: 异常会打断正常执行流，隐式冒泡到 catch 块
 try {
-    String data = readConfig("config.json");
-    User u = parseUser(data);
+    String data = readConfig("config.json"); // 若抛出 IOException，后续代码不再执行，直接跳转到 catch 
+    User u = parseUser(data);               // 若抛出 ParseException，同样跳转
     save(u);
 } catch (IOException e) {
-    logger.error("IO error", e);
+    logger.error("IO error", e);            // 捕获并记录 IO 异常
 } catch (ParseException e) {
-    logger.error("Parse error", e);
+    logger.error("Parse error", e);         // 捕获并记录解析异常
 } finally {
-    releaseResource();
+    releaseResource();                      // 不管是否发生异常，最终一定执行释放资源
 }`}
-          goCode={`// Go: 显式当场判断并返回，使用 defer 延迟清理
+          goCode={`// Go: 显式将错误作为普通值返回，使用 defer 在函数退出前清理资源
 func loadAndSave() error {
-    defer releaseResource() // 函数退出前自动执行
+    defer releaseResource() // 延迟调用：保证在 loadAndSave 函数执行完毕（包括 return）前自动被调用，等同于 finally
 
+    // data, err 同时返回。必须在下文立刻显式检查 err
     data, err := readConfig("config.json")
     if err != nil {
-        return fmt.Errorf("读取配置失败: %w", err) // 当场处理或包装返回
+        // 当场拦截或通过 %w 包装底层错误（保留它）返回给上层
+        return fmt.Errorf("读取配置失败: %w", err) 
     }
 
     u, err := parseUser(data)
@@ -73,10 +75,11 @@ func loadAndSave() error {
         return fmt.Errorf("解析用户失败: %w", err)
     }
 
+    // 简写模式：在一行内执行并判断错误，缩短变量生命周期
     if err := save(u); err != nil {
         return err
     }
-    return nil
+    return nil // 无错误返回 nil
 }`}
           highlights={[
             { java: 'try', go: 'if err != nil' },
@@ -196,34 +199,35 @@ func main() {
 
         <CodeDuel
           title="自定义异常类 vs 隐式 error 接口"
-          javaCode={`// Java: 显式继承 Exception
+          javaCode={`// Java: 显式继承 Exception，定义包含错误属性的子类异常
 public class PaymentException extends Exception {
-    private final int code;
+    private final int code;   // 自定义业务错误码
     
+    // 构造器
     public PaymentException(int code, String msg) {
-        super(msg);
+        super(msg);           // 传入异常描述信息给父类
         this.code = code;
     }
     
     public int getCode() { return code; }
 }
 
-// 抛出
+// 抛出：打断栈执行
 throw new PaymentException(5001, "余额不足");`}
-          goCode={`// Go: 实现 error 接口的结构体
+          goCode={`// Go: 定义实现 error 接口的普通结构体，隐式绑定
 type PaymentError struct {
-    Code    int
-    Message string
+    Code    int       // 业务自定义错误码
+    Message string    // 错误文字描述
 }
 
-// 隐式实现 error 接口
+// 隐式实现内置 error 接口：只需提供 Error() string 方法即可
 func (e *PaymentError) Error() string {
     return fmt.Sprintf("pay failed [%d]: %s", e.Code, e.Message)
 }
 
-// 返回
+// 返回错误：函数执行正常结束，通过多返回值把指针返回
 func Pay() error {
-    return &PaymentError{Code: 5001, Message: "余额不足"}
+    return &PaymentError{Code: 5001, Message: "余额不足"} // 返回结构体指针，该指针隐式实现了 error 接口
 }`}
           highlights={[
             { java: 'extends Exception', go: 'Error() string' },
@@ -251,28 +255,82 @@ func Pay() error {
 
         <CodeDuel
           title="异常解包 vs errors 辅助断言"
-          javaCode={`// Java: 递归检查 Cause
+          javaCode={`// Java: 递归检查 Cause 链条并强转类型
 Throwable cause = e.getCause();
 if (cause instanceof SqlException) {
-    SqlException sqlEx = (SqlException) cause;
-    // ...
+    SqlException sqlEx = (SqlException) cause; // 强制转换
+    // 处理特定 SQL 错误逻辑
 }`}
-          goCode={`// Go: 自动解包断言
-err := dbOperation() // 返回一个被包装的错误
+          goCode={`// Go: 使用 standard library 中的 errors 函数链式断言
+err := dbOperation() // 返回一个可能经过 fmt.Errorf("...: %w", err) 包装的错误链
 
-// 1. 值对比（检查是否是 ErrNotFound）
+// 1. 递归值对比：检测链条中是否包含底层定义的特定哨兵错误值
 if errors.Is(err, sql.ErrNoRows) {
-    // 处理未找到数据
+    // 处理未找到行数据的逻辑
 }
 
-// 2. 类型断言与转换（获取 PaymentError 结构体中的具体 Code）
-var payErr *PaymentError
+// 2. 递归类型断言：检测链条中是否存在特定错误结构体类型，并自动解包赋值给目标指针
+var payErr *PaymentError // 声明目标类型的指针
 if errors.As(err, &payErr) {
-    fmt.Println("支付失败码为:", payErr.Code)
+    fmt.Println("提取到支付失败代码:", payErr.Code) // 解包成功，可直接使用 payErr
 }`}
           highlights={[
             { java: 'instanceof', go: 'errors.As' },
             { java: 'getCause()', go: '%w 包装链' },
+          ]}
+        />
+
+        <CodeDuel
+          title="结构化业务错误处理与提取"
+          javaCode={`// Java: 声明式业务异常与全局异常拦截处理器
+public class BusinessException extends RuntimeException {
+    private final int errorCode;
+    private final int httpStatus;
+
+    public BusinessException(int code, int status, String msg) {
+        super(msg);
+        this.errorCode = code;
+        this.httpStatus = status;
+    }
+}
+
+// 全局异常拦截器 (Spring @RestControllerAdvice)
+@ExceptionHandler(BusinessException.class)
+public ResponseEntity<ErrorResp> handle(BusinessException ex) {
+    return ResponseEntity.status(ex.getHttpStatus())
+        .body(new ErrorResp(ex.getErrorCode(), ex.getMessage()));
+}`}
+          goCode={`// Go: 结构体错误携带 HTTP 状态码与业务代码，结合 errors.As 提取
+type BusinessError struct {
+    ErrorCode  int    // 自定义内部错误码 (e.g. 20001)
+    HTTPStatus int    // HTTP 响应状态码 (e.g. 400)
+    Message    string // 友好错误描述
+}
+
+func (e *BusinessError) Error() string {
+    return fmt.Sprintf("err_code: %d, msg: %s", e.ErrorCode, e.Message)
+}
+
+// Controller 控制器统一提取处理
+func HandleRequest(c *gin.Context) {
+    err := executeService() // 返回可能被包装的 BusinessError
+    if err != nil {
+        var bizErr *BusinessError
+        // 使用 errors.As 自动递归解包找到最内层的 BusinessError 并提取
+        if errors.As(err, &bizErr) {
+            c.JSON(bizErr.HTTPStatus, gin.H{
+                "code": bizErr.ErrorCode,
+                "msg":  bizErr.Message,
+            })
+            return
+        }
+        // 兜底返回 500 系统未知错误
+        c.JSON(500, gin.H{"code": 9999, "msg": "Internal Server Error"})
+    }
+}`}
+          highlights={[
+            { java: '@ExceptionHandler', go: 'errors.As(err, &bizErr) 显式判定' },
+            { java: 'BusinessException', go: 'BusinessError 结构体' },
           ]}
         />
 
