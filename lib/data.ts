@@ -233,13 +233,12 @@ export const chapters: ChapterMeta[] = [
     titleEn: 'Enterprise Case Study',
     icon: '',
     color: 'from-indigo-500 to-violet-600',
-    description: '以 enterprise-ai-assistant-server 示例项目为范本，打通从基础语法到企业落地的最后一关，将核心架构完全平替为 Go 语言。',
+    description: '以核心模块“订单支付与队列处理”为背景，打通从 DTO 参数校验、本地事务、支付 Webhook 签名验证到 RabbitMQ 异步通知的完整工业级链路。',
     sections: [
-      { id: 'proj-layout', title: '物理架构与配置加载', javaConcept: 'Spring Multi-Module', goConcept: 'Go Mono-repo & Viper' },
+      { id: 'proj-dto', title: 'DTO 参数校验', javaConcept: 'Spring Boot Bean Validation', goConcept: 'Gin Struct Binding' },
       { id: 'proj-db', title: '数据模型与事务管理', javaConcept: 'MyBatis-Plus Entity & Transactional', goConcept: 'GORM Tags & Defer Rollback' },
-      { id: 'proj-auth', title: '双端鉴权与会话隔离', javaConcept: 'Sa-Token JWT & Redis Session', goConcept: 'Gin JWT Middleware & Singleflight' },
-      { id: 'proj-chat', title: 'AI 消息链路与流通道', javaConcept: 'Spring MVC & Downstream HTTP', goConcept: 'Gin Route & Channels & Context' },
-      { id: 'proj-mq', title: '异步队列与三方校验', javaConcept: 'Spring AMQP & Apple/Stripe SDK', goConcept: 'amqp091 Consumer & Webhook Sign' },
+      { id: 'proj-payment', title: '三方支付与签名验证', javaConcept: 'Stripe Java Webhook constructEvent', goConcept: 'Gin io.ReadAll & Stripe Go verify' },
+      { id: 'proj-mq', title: 'RabbitMQ 异步管道', javaConcept: 'Spring AMQP Template & Listener', goConcept: 'amqp091 Channel Pub/Sub & Loop' },
     ],
   },
 ]

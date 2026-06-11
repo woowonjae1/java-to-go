@@ -17,104 +17,112 @@ interface CaseStudySection {
 
 const caseStudies: CaseStudySection[] = [
   {
-    id: 'di-injection',
-    title: '1. 工程依赖与依赖注入 (Dependency Management & Injection)',
-    description: '对比 Spring Boot 隐式反射装配与 Go Modules 扁平依赖及显式依赖装配。',
-    javaExplanation: 'Spring 依靠容器在运行时扫描类元数据，利用反射动态实例化对象并完成 @Autowired 自动装配。虽然简化了代码，但在大型微服务中，反射魔术使得依赖关系链变得隐蔽，冷启动时间变长，难以在编译期排查依赖循环。',
-    goExplanation: 'Go 强制显式依赖注入。在 main.go 中，我们通过自底向上的构造函数（如 NewUserRepository -> NewUserService）手工组装对象树。没有任何动态反射托管，依赖链在入口函数一目了然，编译时检查一切类型和参数错误，启动开销为零。',
-    whyComparison: 'Go 社区偏好显式（Explicit）优于隐式（Implicit），以及编译期安全优于运行时魔术。虽然手动连线需要多写几行初始化代码，但极大地增强了代码可读性、调试速度以及编译保障，冷启动耗时从 Java 的数秒缩短到微秒级。',
-    javaCode: `// Java: Spring Boot 声明式反射注入
-@RestController
-@RequestMapping("/api/v1/user")
-public class UserController {
-    // 依赖容器在运行时动态注入实例
-    @Autowired
-    private UserService userService;
+    id: 'proj-dto',
+    title: '1. 数据接收与 DTO 校验 (Request DTO & Validation)',
+    description: '对比 Spring Boot Bean Validation 声明式校验与 Go Gin 结构体绑定与 Validate 字段标签。',
+    javaExplanation: 'Java 依靠 Hibernate Validator 机制，在 DTO 上添加 @NotNull, @Min 等注解，在 Controller 处通过 @Valid 进行修饰。如果有参数不合规，由全局异常处理器统一拦截捕获。虽然业务层无须手动解析，但这一套基于注解反射的隐式框架难以直观阅读且存在启动耗时。',
+    goExplanation: 'Go 倡导强类型与显式操作。Gin 提供 ShouldBindJSON 机制，基于 Struct Tags (如 binding:"required,min=1") 绑定参数并利用 validator 库校验。返回值直接附带 Error，调用方可当场显式地处理校验失败，流程直观、清晰、零反射魔法。',
+    whyComparison: 'Spring 隐藏了绑定与校验的细节，而 Go 将校验结果作为 error 显式返回。这让逻辑执行流程完全线性化，无任何隐式代理开销，不仅冷启动开销极低，而且非常利于精细化控制特定参数错误的个性化定制返回。',
+    javaCode: `// Java: Spring Boot 声明式 DTO 参数校验
+public class OrderCreateDTO {
+    @NotNull(message = "商品ID不能为空")
+    private Long productId;
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserDTO dto) {
-        userService.register(dto);
-        return ResponseEntity.ok("success");
+    @Min(value = 1, message = "购买数量至少为1")
+    private Integer quantity;
+
+    // Getters & Setters
+}
+
+@RestController
+@RequestMapping("/api/v1/orders")
+public class OrderController {
+    @PostMapping
+    public ResponseEntity<?> createOrder(@Valid @RequestBody OrderCreateDTO dto) {
+        // 隐式完成校验，若不符合规范直接抛出异常被全局处理器拦截
+        OrderVo vo = orderService.create(dto);
+        return ResponseEntity.ok(vo);
     }
 }`,
-    goCode: `// Go: 显式构造装配与初始化
-type UserRepository struct {
-    db *gorm.DB
-}
-func NewUserRepository(db *gorm.DB) *UserRepository {
-    return &UserRepository{db: db}
+    goCode: `// Go: Gin 结构体 Tag 显式绑定与验证
+type OrderCreateDTO struct {
+    ProductID int64 \`json:"product_id" binding:"required"\`
+    Quantity  int   \`json:"quantity" binding:"required,min=1"\`
 }
 
-type UserService struct {
-    repo *UserRepository
-}
-func NewUserService(repo *UserRepository) *UserService {
-    return &UserService{repo: repo}
-}
-
-// 在 main 入口中显式连线组装
-func main() {
-    db := initDB()
-    userRepo := NewUserRepository(db)
-    userSvc := NewUserService(userRepo)
+func CreateOrderHandler(c *gin.Context) {
+    var dto OrderCreateDTO
     
-    r := gin.Default()
-    r.POST("/api/v1/user/register", func(c *gin.Context) {
-        // 直接调用显式组装的业务逻辑
-        c.JSON(200, gin.H{"status": "success"})
-    })
-    r.Run(":8080")
+    // 显式执行绑定 and 参数检验，若出错直接获取 error 并做出响应
+    if err := c.ShouldBindJSON(&dto); err != nil {
+        c.JSON(400, gin.H{
+            "status":  "error",
+            "message": "参数校验失败: " + err.Error(),
+        })
+        return
+    }
+    
+    vo, err := orderService.Create(c.Request.Context(), &dto)
+    if err != nil {
+        c.JSON(500, gin.H{"error": err.Error()})
+        return
+    }
+    c.JSON(200, vo)
 }`,
     highlights: [
-      { java: '@Autowired', go: 'NewUserRepository/NewUserService' },
-      { java: '@RestController', go: 'gin.Default()' }
+      { java: '@Valid @RequestBody', go: 'c.ShouldBindJSON(&dto)' },
+      { java: '@NotNull', go: 'binding:"required"' },
+      { java: '@Min(value = 1)', go: 'min=1' }
     ]
   },
   {
-    id: 'db-transaction',
-    title: '2. 数据映射与显式事务管理 (ORM & Transaction Control)',
-    description: '对比 MyBatis-Plus AOP 声明式事务失效陷阱与 GORM 显式延迟回滚事务。',
-    javaExplanation: 'Java 使用 MyBatis-Plus 注解进行物理字段定义，并通过 @Transactional 进行声明式事务保护。如果在一个没有注解的父方法中调用同类中的注解方法，Spring AOP 代理会由于“自调用”而静默失效，导致事务未开启且不回滚。',
-    goExplanation: 'Go 采用 GORM struct tags 描述底层字段。事务通过 db.Begin() 显式开启，并通过 defer tx.Rollback() 机制进行兜底保护。任何提前返回错误的操作都会自动触发 Rollback，只有成功执行 tx.Commit() 才会真正提交。',
-    whyComparison: 'Go 的事务模型将控制权完全移交给开发者，消除了 AOP 动态代理的内部黑盒，彻底杜绝了 Java 生态中因为“类自调用”、“受检/非受检异常不一致”导致的事务失效问题，确保数据库操作的不变量安全。',
-    javaCode: `// Java: 隐式 AOP 声明式事务 (注意自调用失效陷阱)
+    id: 'proj-db',
+    title: '2. 数据实体与本地事务处理 (Entity & Transaction Control)',
+    description: '对比 MyBatis-Plus AOP 声明式事务（防失效陷阱）与 GORM 显式延迟回滚本地事务。',
+    javaExplanation: 'Java 利用 Spring AOP 代理 @Transactional 拦截执行，若抛出未经捕获的 RuntimeException 将触发自动回滚。然而，在同类内部方法“自调用”时，AOP 代理失效导致事务静默无法开启；且捕获非受检异常不回滚等问题常成为生产灾难。',
+    goExplanation: 'Go 强调显式代码逻辑。GORM 使用 db.Begin() 手动拉起事务，并利用 defer tx.Rollback() 作为回滚兜底。发生任何错误或 panic 提前 return 时，defer 必然被触发从而执行回滚操作；唯有最终成功执行 tx.Commit() 且未报错，事务才会被真正持久化。',
+    whyComparison: 'Go 将事务生命周期的控制权毫无保留地交给了开发人员。不仅能通过 defer 保证无论如何都不泄露连接或遗漏回滚，还消除了 Java AOP 魔法的底层“暗盒”，在编译期和运行期都能百分之百确定事务的范围 and 执行时机。',
+    javaCode: `// Java: 隐式 AOP 声明式事务 (注意同类自调用失效陷阱)
 @Service
 public class OrderService {
     @Autowired
     private OrderMapper orderMapper;
+    @Autowired
+    private UserAccountMapper accountMapper;
 
-    // 自调用入口：无事务支持，导致 doCreate 上的事务静默失效
-    public void createOrder(Order order) {
-        doCreate(order);
+    // 外部调用此方法时，事务将因为 AOP 代理“自调用”而静默失效
+    public void processOrder(Order order) {
+        doCreateAndPay(order);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void doCreate(Order order) {
-        orderMapper.insert(order);
-        orderMapper.updateInventory(order.getProductId());
+    public void doCreateAndPay(Order order) {
+        orderMapper.insert(order); // 保存订单
+        // 扣减用户账户余额
+        accountMapper.deductBalance(order.getUserId(), order.getAmount());
     }
 }`,
-    goCode: `// Go: 显式事务控制与 defer 注册延迟回滚
-func (s *OrderService) CreateOrder(ctx context.Context, order *Order) error {
-    // 1. 显式开启数据库事务
+    goCode: `// Go: GORM 显式事务拉起与 defer 延迟回滚兜底
+func (s *OrderService) CreateAndPay(ctx context.Context, order *Order) error {
+    // 1. 显式开启数据库本地事务
     tx := s.db.WithContext(ctx).Begin()
     if tx.Error != nil {
         return tx.Error
     }
     
-    // 2. 利用 defer 注册回滚。哪怕之后发生 panic 或 return error，也必然自动回滚。
-    // 一旦 tx.Commit() 成功，tx.Rollback() 自动转为 no-op。
+    // 2. 利用 defer 注册回滚。只要下面出现 error 或 panic 退出，都必然自动执行 tx.Rollback()。
+    // 当 tx.Commit() 成功后，后续 Rollback 将自动变成无效果的空操作（no-op）。
     defer tx.Rollback()
 
-    // 3. 执行单条 SQL
+    // 3. 执行创建订单写入
     if err := tx.Create(order).Error; err != nil {
-        return err // 报错直接退出，defer 会触发回滚
+        return err // 直接退出，触发 defer 回滚
     }
 
-    // 4. 更新关联表
-    if err := tx.Table("inventory").Where("product_id = ?", order.ProductID).
-        Update("stock", gorm.Expr("stock - ?", 1)).Error; err != nil {
-        return err
+    // 4. 执行扣减余额
+    if err := tx.Table("user_accounts").Where("user_id = ?", order.UserID).
+        Update("balance", gorm.Expr("balance - ?", order.Amount)).Error; err != nil {
+        return err // 直接退出，触发 defer 回滚
     }
 
     // 5. 显式提交事务
@@ -126,158 +134,137 @@ func (s *OrderService) CreateOrder(ctx context.Context, order *Order) error {
     ]
   },
   {
-    id: 'auth-session',
-    title: '3. 鉴权与会话共享隔离 (Auth Middleware & Context Passing)',
-    description: '对比 Java ThreadLocal 线程局部变量与 Go Context 协程上下文传递。',
-    javaExplanation: 'Java 习惯在 Filter/Interceptor 中解析 JWT 并保存在静态 ThreadLocal 内，供整个调用链（Controller -> Service -> DAO）无参获取。但这在多线程异步编排时会发生上下文丢失或线程污染漏洞。',
-    goExplanation: 'Go 没有 ThreadLocal，因为 Goroutine 的运行可能被底层线程并发调度。Go 统一要求将用户信息作为 context.Context 写入请求链路，并作为第一个参数显式层层透传给各个接口。',
-    whyComparison: 'Go 强调“显式（Explicit）传递上下文”。ThreadLocal 虽然省去了传参步骤，但引入了全局隐式状态，降低了代码可测试性并埋下线程池污染隐患。Go 显式传递 context 可以更直观地管理链路超时、终止信号和链路追踪。',
-    javaCode: `// Java: 隐式 ThreadLocal 会话存储
-public class UserContext {
-    private static final ThreadLocal<Long> ctx = new ThreadLocal<>();
-    public static void setUserId(Long id) { ctx.set(id); }
-    public static Long getUserId() { return ctx.get(); }
-    public static void clear() { ctx.remove(); }
-}
+    id: 'proj-payment',
+    title: '3. 三方支付 SDK 调用与 Webhook 签名验证 (Payment SDK & Webhook)',
+    description: '对比 Stripe Webhook 回调中，Java 自动读取 Request Body 验证签名与 Go 显式流式读取并支持多次读取的机制。',
+    javaExplanation: 'Java 在 Spring Boot 中，Servlet 容器在数据到达 Controller 前可能已将其读取到包装类中，调用 Stripe SDK Webhook.constructEvent 比较顺畅。但如果需要对原始数据进行多次处理，需要重写 HttpServletRequestWrapper，实现起来繁琐。',
+    goExplanation: 'Go 的 HTTP Request Body 是个只读一次的 io.ReadCloser 物理流。在 Gin 中，如果三方 Webhook（如 Stripe/Paypal）需要验证签名，我们必须先用 io.ReadAll 读取流的字节切片，然后再用 io.NopCloser 将流重新写回 Request.Body，以便 SDK 和后续中间件可重复多次读取。',
+    whyComparison: 'Go 在网络 IO 设计上极为底层和纯粹，将 Request.Body 设计为不可重复读的单向流。这虽然要求开发者在需要多次读取时显式执行‘回填字节流’（NopCloser），但极大地降低了不必要的内存开销与拷贝操作，实现了真正的高性能。',
+    javaCode: `// Java: Stripe Webhook 签名构建与事件验证
+@RestController
+@RequestMapping("/api/v1/payment/webhook")
+public class StripeWebhookController {
+    @Value("\${stripe.webhook.secret}")
+    private String endpointSecret;
 
-// 在 Service 任何位置隐式调用
-@Service
-public class BillService {
-    public void generateBill() {
-        Long userId = UserContext.getUserId(); // 静态隐式拉取
-        // ...
-    }
-}`,
-    goCode: `// Go: Context 显式传递上下文
-type contextKey string
-const userIdKey contextKey = "userId"
-
-// 中间件解析并注入 context
-func AuthMiddleware() gin.HandlerFunc {
-    return func(c *gin.Context) {
-        token := c.GetHeader("Authorization")
-        userId := parseJWT(token)
+    @PostMapping
+    public ResponseEntity<String> handleStripeWebhook(
+        @RequestBody String payload,
+        @RequestHeader("Stripe-Signature") String sigHeader) {
         
-        // 基于 Request Context 注入新值并覆盖写入
-        ctx := context.WithValue(c.Request.Context(), userIdKey, userId)
-        c.Request = c.Request.WithContext(ctx)
-        c.Next()
-    }
-}
-
-// 业务层首参数显式接收 ctx 并提取
-func (s *BillService) GenerateBill(ctx context.Context) error {
-    userId, ok := ctx.Value(userIdKey).(int64)
-    if !ok {
-        return errors.New("unauthorized")
-    }
-    // ...
-    return nil
-}`,
-    highlights: [
-      { java: 'ThreadLocal', go: 'context.Context' },
-      { java: 'UserContext.getUserId()', go: 'ctx.Value(userIdKey)' }
-    ]
-  },
-  {
-    id: 'concurrency-singleflight',
-    title: '4. 并发流量防击穿合并 (Singleflight Traffic Coalescing)',
-    description: '面对热点数据缓存失效，如何合并瞬时重复请求，保护底层数据库。',
-    javaExplanation: 'Java 遇到高并发击穿时，通常依赖本地互斥锁（ReentrantLock）进行双重检查锁定，或是采用分布式锁。对于大量相同的用户鉴权查询，需要配置复杂的同步阻塞逻辑，容易引发线程挂起和超时。',
-    goExplanation: 'Go 提供了官方并发利器 golang.org/x/sync/singleflight。它通过内部互斥锁和通道，将相同 Key 的并发调用进行合并。只有一个请求真正访问后端，其他请求挂起并共享这单个返回结果。',
-    whyComparison: 'Go 使用 Singleflight 在不需要分布式锁的前提下，直接在内存层合并热点重复查询。不仅把系统压力降低到了极致，还能以极少的代码量（仅 Do 原语包覆）提供稳定高效的流量崩塌防护。',
-    javaCode: `// Java: 基于锁的双重检查控制流量击穿
-public class UserCache {
-    private final ReentrantLock lock = new ReentrantLock();
-    private final Map<String, User> cache = new ConcurrentHashMap<>();
-
-    public User getUser(String id) {
-        User u = cache.get(id);
-        if (u != null) return u;
-
-        lock.lock();
         try {
-            u = cache.get(id);
-            if (u != null) return u;
-            u = db.query(id); // 真正查询数据库
-            cache.put(id, u);
-            return u;
-        } finally {
-            lock.unlock();
+            // Spring MVC 内部已缓存 String 载荷，直接传给 SDK 进行签名验证
+            Event event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
+            paymentService.handleEvent(event);
+            return ResponseEntity.ok("success");
+        } catch (SignatureVerificationException e) {
+            return ResponseEntity.status(400).body("签名校验失败");
         }
     }
 }`,
-    goCode: `// Go: 使用 singleflight 合并相同 Key 的并发请求
-type UserCacheManager struct {
-    db      *gorm.DB
-    sfGroup singleflight.Group // singleflight 合并组
-}
-
-func (m *UserCacheManager) GetUser(ctx context.Context, id string) (*User, error) {
-    // Do 方法以 id 作为 Key 合并请求
-    val, err, _ := m.sfGroup.Do(id, func() (interface{}, error) {
-        var u User
-        err := m.db.WithContext(ctx).First(&u, "id = ?", id).Error
-        if err != nil {
-            return nil, err
-        }
-        return &u, nil
-    })
-
+    goCode: `// Go: Gin 中显式流式读取并回填 Request.Body 以供 Stripe SDK 校验
+func StripeWebhookHandler(c *gin.Context) {
+    sigHeader := c.GetHeader("Stripe-Signature")
+    
+    // 1. 从 HTTP 只读网络流中显式读取全部字节
+    payload, err := io.ReadAll(c.Request.Body)
     if err != nil {
-        return nil, err
-    }
-    return val.(*User), nil
-}`,
-    highlights: [
-      { java: 'ReentrantLock lock', go: 'singleflight.Group' },
-      { java: 'db.query(id)', go: 'sfGroup.Do(id, ...)' }
-    ]
-  },
-  {
-    id: 'stream-sse',
-    title: '5. SSE 流式传输与异步管道 (Server-Sent Events & Pipelines)',
-    description: '对比 Java Spring WebFlux 响应式流模式与 Go 基于 http.Client 管道式流写入。',
-    javaExplanation: 'Java 在流式 AI 请求中（如 SSE 转发大模型），必须引入响应式框架 WebFlux，利用 WebClient 接收 Flux 数据流，并将其输出。代码需要使用函数响应式风格，陡峭的学习曲线让调试和异常排查异常痛苦。',
-    goExplanation: 'Go 通过极其纯粹的“数据通道与流读取”设计。Go 使用底层 bufio.Reader 逐行读取下游大模型的 Chunk 数据包，并在接收到的瞬间，以物理管道形式直接通过 HTTP 连接通道写回给客户端。',
-    whyComparison: 'Go 不需要复杂的 WebFlux 响应式编排魔法。通过直接调用 ReadBytes/Write 回写，代码逻辑保持为同步直觉，且能够利用 Context 在客户端主动断开连接时，立即层层取消下游大模型的长连接，杜绝无效流量和资源泄漏。',
-    javaCode: `// Java: WebFlux Flux SSE 响应式流转发
-@GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-public Flux<String> streamData(@RequestParam String prompt) {
-    return webClient.post()
-        .uri("/v1/chat/completions")
-        .bodyValue(new ChatReq(prompt))
-        .retrieve()
-        .bodyToFlux(String.class) // 下游转换为 Flux
-        .map(chunk -> "data: " + chunk + "\\n\\n")
-        .onErrorResume(e -> Flux.just("data: [ERROR]\\n\\n"));
-}`,
-    goCode: `// Go: 物理 Reader 流逐行读取并回写客户端
-func StreamChat(c *gin.Context) {
-    prompt := c.Query("prompt")
-    resp, err := client.Post("https://api.openai.com/v1/chat", prompt)
-    if err != nil {
-        c.JSON(500, gin.H{"error": err.Error()})
+        c.JSON(400, gin.H{"error": "读取载荷失败"})
         return
     }
-    defer resp.Body.Close()
+    
+    // 2. 关键点：网络流只能读取一次。Stripe SDK 内部还需要读取 Body 校验，
+    // 必须利用 NopCloser 将刚才读取的数据封回 Body 流中，供后续二次读取。
+    c.Request.Body = io.NopCloser(bytes.NewBuffer(payload))
 
-    // 建立流式读写上下文
-    reader := bufio.NewReader(resp.Body)
-    c.Stream(func(w io.Writer) bool {
-        line, err := reader.ReadBytes('\\n')
-        if err != nil {
-            return false // 读取完成或报错，终止流
-        }
-        
-        // 实时回写客户端连接
-        w.Write(line)
-        return true // 继续流处理
-    })
+    // 3. 调用 Stripe 官方 SDK 进行签名验证与结构化解析
+    event, err := webhook.ConstructEvent(payload, sigHeader, endpointSecret)
+    if err != nil {
+        c.JSON(400, gin.H{"error": "签名验证失败: " + err.Error()})
+        return
+    }
+
+    paymentService.ProcessEvent(c.Request.Context(), &event)
+    c.String(200, "success")
 }`,
     highlights: [
-      { java: 'Flux<String>', go: 'bufio.Reader & w.Write' },
-      { java: 'bodyToFlux', go: 'c.Stream' }
+      { java: '@RequestBody String payload', go: 'io.ReadAll(c.Request.Body)' },
+      { java: 'Webhook.constructEvent', go: 'webhook.ConstructEvent' },
+      { java: 'ResponseEntity.status(400)', go: 'io.NopCloser(bytes.NewBuffer(payload))' }
+    ]
+  },
+  {
+    id: 'proj-mq',
+    title: '4. 异步队列发送与消费 (RabbitMQ Publishing & Consuming)',
+    description: '对比 Spring AMQP @RabbitListener 隐式容器监听与 Go amqp091-go 物理通道阻塞循环消费。',
+    javaExplanation: 'Java 利用 Spring Boot Starter AMQP 简化队列管理。通过配置类声明交换机和队列，并利用 @RabbitListener 注解修饰消费类，框架在后台自动维护线程池和长连接。一旦消息到达，反射调用指定方法。由于屏蔽了 RabbitMQ AMQP 的 Channel 细粒度操作，深度调优与拥堵定位非常不便。',
+    goExplanation: 'Go 秉承显式声明与 CSP 通信模式。利用 rabbitmq/amqp091-go，必须显式连接 Connection、开辟 Channel 并声明 Exchange/Queue。消费时，ch.Consume 会返回一个只读的 Go Channel 管道。在 Goroutine 中，我们使用 for msg := range msgs 进行阻塞式轮询，显式执行业务后手动发送 Ack 回执。',
+    whyComparison: 'Spring 隐藏了消费线程池管理和 ACK 回执；Go 利用 Goroutine 和 Channel 抽象了 AMQP 协议的物理长连接。Go 的协程开销极低，开发者可以直接对每个消息启动一个 Goroutine 异步处理加显式 ACK，极大地提升了吞吐率且容易追踪每个连接的通道占用情况。',
+    javaCode: `// Java: Spring AMQP 声明式消息发布与监听接收
+@Service
+public class OrderPaidPublisher {
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    public void publishPaidEvent(OrderPaidEvent event) {
+        // 自动将对象序列化为 JSON 并发送到 Exchange
+        rabbitTemplate.convertAndSend("order.exchange", "order.paid.routing", event);
+    }
+}
+
+@Component
+public class OrderPaidConsumer {
+    // 声明式容器在后台维护消费者连接并反射调用此方法
+    @RabbitListener(queues = "order.paid.queue")
+    public void handleOrderPaid(OrderPaidEvent event) {
+        System.out.println("收到订单支付消息: " + event.getOrderId());
+        // 隐式自动确认 ACK 机制
+    }
+}`,
+    goCode: `// Go: amqp091-go 显式 Channel 通道写入与阻塞消费管道
+type OrderPaidEvent struct {
+    OrderID string \`json:"order_id"\`
+}
+
+// 发送端：使用物理 Channel 推送消息
+func (p *OrderPaidPublisher) PublishPaidEvent(ctx context.Context, event *OrderPaidEvent) error {
+    body, _ := json.Marshal(event)
+    // 显式在 RabbitMQ 信道 (Channel) 上发布单条持久化消息
+    return p.amqpChannel.PublishWithContext(ctx,
+        "order.exchange",      // exchange
+        "order.paid.routing",   // routing key
+        false, false,          // mandatory, immediate
+        amqp.Publishing{
+            ContentType:  "application/json",
+            DeliveryMode: amqp.Persistent, // 消息持久化
+            Body:         body,
+        },
+    )
+}
+
+// 接收端：开辟 Goroutine 显式通过 Go Channel 阻塞式轮询并手动 Ack
+func (c *OrderPaidConsumer) StartConsume(ctx context.Context) {
+    // 获取只读的消息传递管道 (Go Channel)
+    msgs, _ := c.amqpChannel.Consume("order.paid.queue", "", false, false, false, false, nil)
+    
+    go func() {
+        // 阻塞循环读取，一旦 RabbitMQ 消息到达则推入迭代
+        for d := range msgs {
+            var event OrderPaidEvent
+            json.Unmarshal(d.Body, &event)
+            
+            // 处理业务
+            log.Printf("收到订单支付消息: %s", event.OrderID)
+            
+            // 显式向 RabbitMQ Server 发送单条 ACK 确认
+            d.Ack(false)
+        }
+    }()
+}`,
+    highlights: [
+      { java: 'rabbitTemplate.convertAndSend', go: 'amqpChannel.PublishWithContext' },
+      { java: '@RabbitListener(queues = "...")', go: 'ch.Consume & for msg := range msgs' },
+      { java: 'OrderPaidEvent event', go: 'd.Ack(false)' }
     ]
   }
 ]
@@ -292,7 +279,7 @@ export default function ProjectComparisonPage() {
           实战对比 — 企业级工程平替
         </h1>
         <p className="text-base text-muted-fg mt-2 max-w-3xl leading-relaxed">
-          深入研究如何将经典 Spring Boot 微服务生态（如 Spring DI、MyBatis-Plus 事务、Sa-Token 拦截、RabbitMQ、SSE 流式大模型等）安全、平稳地转换到 Go 原生架构。拒绝动态反射黑盒，拥抱显式类型安全。
+          深入研究如何将核心模块“订单支付与队列处理”从 DTO 参数校验、本地事务、三方支付 Webhook 签名验证到 RabbitMQ 异步通知，安全、平稳地转换到 Go 原生架构。拒绝动态反射黑盒，拥抱显式类型安全。
         </p>
       </div>
 
