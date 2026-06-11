@@ -4,7 +4,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
-import { ChapterIcon } from '@/components/chapter-icon'
+
 
 export default function OOPPage() {
   return (
@@ -12,9 +12,8 @@ export default function OOPPage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 2</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
-          <span className="text-purple-500"><ChapterIcon id="oop" className="w-8 h-8" /></span>
-          <span>结构篇 — OOP → Composition</span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
+          结构篇 — OOP → Composition
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           告别深重的类继承树，拥抱扁平的结构体组合。Go 的设计哲学是<strong>“组合优于继承”</strong>，并通过隐式接口（鸭子类型）实现了极致的解耦与多态。
@@ -32,7 +31,7 @@ export default function OOPPage() {
       {/* Section 1: Struct vs Class */}
       <section id="struct" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold">2.1</span>
+          <span className="font-mono text-muted-fg">§2.1</span>
           类与结构体：getter/setter 消失术
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -183,7 +182,7 @@ Withdraw 80: true, remaining: 70.0`}
       {/* Section 2: Embedding */}
       <section id="embedding" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold">2.2</span>
+          <span className="font-mono text-muted-fg">§2.2</span>
           继承 vs 嵌入：没有多态的“继承”
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -292,7 +291,7 @@ func (w *Worker) Log(msg string) {
       {/* Section 3: Interfaces */}
       <section id="interfaces" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold">2.3</span>
+          <span className="font-mono text-muted-fg">§2.3</span>
           接口实现：显式契约 vs 鸭子类型 (Duck Typing)
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -333,8 +332,8 @@ var r Reader = FileReader{}`}
           ]}
         />
 
-        <div className="my-6 p-5 rounded-xl bg-card border border-card-border">
-          <h4 className="text-sm font-bold mb-2 text-foreground">🔬 Go 接口底层：`iface` 内存解密</h4>
+        <div className="my-6 p-5 rounded-md bg-card border border-card-border">
+          <h4 className="text-sm font-bold mb-2 text-foreground">Go 接口底层：`iface` 内存解密</h4>
           <p className="text-sm text-muted-fg leading-relaxed">
             Go 接口变量的底层并不是普通的指针，它在运行时被表示为包含两个字段的结构体 <strong>iface</strong>：
           </p>
@@ -351,7 +350,7 @@ var r Reader = FileReader{}`}
       {/* Section 4: Generics */}
       <section id="generics" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold">2.4</span>
+          <span className="font-mono text-muted-fg">§2.4</span>
           泛型：类型具化 vs 类型擦除 (Type Erasure)
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -374,7 +373,7 @@ var r Reader = FileReader{}`}
       {/* Section 5: Packages & DI */}
       <section id="pkg-di" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold">2.5</span>
+          <span className="font-mono text-muted-fg">§2.5</span>
           [新增] 包设计与依赖注入：消除反射魔法
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -556,7 +555,7 @@ func main() {
         <Link href="/chapters/basics" className="text-sm text-muted-fg hover:text-accent transition-colors flex items-center gap-1">
           ← 基础篇
         </Link>
-        <Link href="/chapters/errors" className="px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors flex items-center gap-2">
+        <Link href="/chapters/errors" className="px-4 py-2 rounded-md border border-card-border text-sm font-medium text-foreground hover:bg-muted transition-colors flex items-center gap-2">
           下一章：异常篇 →
         </Link>
       </div>

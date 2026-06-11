@@ -3,7 +3,7 @@ import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
-import { ChapterIcon } from '@/components/chapter-icon'
+
 
 export default function WebPage() {
   return (
@@ -11,9 +11,8 @@ export default function WebPage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 5</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
-          <span className="text-rose-500"><ChapterIcon id="web" className="w-8 h-8" /></span>
-          <span>Web 篇 — Web & API 开发</span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
+          Web 篇 — Web & API 开发
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           直击 Java 程序员最熟悉的 Spring MVC / Spring Boot Web 架构。理解在 Go 世界中，如何使用轻量级 Web 引擎（如 Gin）构建高性能 RESTful APIs，掌握中间件的洋葱模型以及标签化的请求绑定与参数校验。
@@ -23,7 +22,7 @@ export default function WebPage() {
       {/* Section 1: Routing & Controller */}
       <section id="routing" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-red-500 flex items-center justify-center text-white text-sm font-bold">5.1</span>
+          <span className="font-mono text-muted-fg">§5.1</span>
           路由与 HTTP 控制器：从注解扫描到显示路由树
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -95,7 +94,7 @@ v1.GET("/active", Handler2) // 运行时会直接崩溃或匹配混乱！
       {/* Section 2: Middleware */}
       <section id="middleware" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-red-500 flex items-center justify-center text-white text-sm font-bold">5.2</span>
+          <span className="font-mono text-muted-fg">§5.2</span>
           中间件机制：AOP 拦截器与洋葱模型
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -147,7 +146,7 @@ func AuthMiddleware() gin.HandlerFunc {
       {/* Section 3: Data Binding */}
       <section id="binding" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-red-500 flex items-center justify-center text-white text-sm font-bold">5.3</span>
+          <span className="font-mono text-muted-fg">§5.3</span>
           数据绑定与参数校验：Spring Validation vs 结构体 tag
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -395,7 +394,7 @@ func main() {
         <Link href="/chapters/concurrency" className="text-sm text-muted-fg hover:text-accent transition-colors flex items-center gap-1">
           ← 并发篇
         </Link>
-        <Link href="/chapters/database" className="px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors flex items-center gap-2">
+        <Link href="/chapters/database" className="px-4 py-2 rounded-md border border-card-border text-sm font-medium text-foreground hover:bg-muted transition-colors flex items-center gap-2">
           下一章：数据篇 →
         </Link>
       </div>

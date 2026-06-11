@@ -2,7 +2,7 @@ import { CodeDuel } from '@/components/code-duel'
 import { GoPlayground } from '@/components/go-playground'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
-import { ChapterIcon } from '@/components/chapter-icon'
+
 
 export default function MiddlewarePage() {
   return (
@@ -10,9 +10,8 @@ export default function MiddlewarePage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 7</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
-          <span className="text-teal-500"><ChapterIcon id="middleware" className="w-8 h-8" /></span>
-          <span>服务篇 — 中间件、RPC 与日志</span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
+          服务篇 — 中间件、RPC 与日志
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           直击分布式工程中的核心三驾马车：缓存、通信与可观测性。比对 Spring Boot Redis 模板、Feign 声明式微服务契约、以及 Logback 系统，理解 Go 高并发中间件在强约束下的高性能演进。
@@ -22,7 +21,7 @@ export default function MiddlewarePage() {
       {/* Section 1: Redis */}
       <section id="redis" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white text-sm font-bold">7.1</span>
+          <span className="font-mono text-muted-fg">§7.1</span>
           缓存访问：RedisTemplate vs go-redis 与 Context
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -66,7 +65,7 @@ func SaveToken(ctx context.Context, rdb *redis.Client, key, token string) error 
       {/* Section 2: RPC */}
       <section id="grpc" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white text-sm font-bold">7.2</span>
+          <span className="font-mono text-muted-fg">§7.2</span>
           微服务 RPC 通信：OpenFeign 反射 vs gRPC & Protobuf
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -104,7 +103,7 @@ resp, err := client.GetUser(ctx, &UserRequest{Id: 42})`}
       {/* Section 3: Logging */}
       <section id="logging" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white text-sm font-bold">7.3</span>
+          <span className="font-mono text-muted-fg">§7.3</span>
           高性能结构化日志：Logback 字符串拼接 vs Zap 零堆分配 (Zero Allocation)
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -310,7 +309,7 @@ func main() {
         <Link href="/chapters/database" className="text-sm text-muted-fg hover:text-accent transition-colors flex items-center gap-1">
           ← 数据篇
         </Link>
-        <Link href="/chapters/architecture" className="px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors flex items-center gap-2">
+        <Link href="/chapters/architecture" className="px-4 py-2 rounded-md border border-card-border text-sm font-medium text-foreground hover:bg-muted transition-colors flex items-center gap-2">
           下一章：工程篇 →
         </Link>
       </div>

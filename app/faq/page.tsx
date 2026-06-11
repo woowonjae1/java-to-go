@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 
 interface FAQ {
   id: string
@@ -94,7 +93,7 @@ const faqs: FAQ[] = [
           这是 Go 最著名的坑：<strong>「带类型的 nil 不等于 nil 接口」</strong>。接口值由<strong>（类型, 值）</strong>两部分组成，
           只有<strong>两者都为 nil</strong> 时接口才 == nil。
         </p>
-        <pre className="bg-black/30 rounded-lg p-3 text-xs overflow-x-auto my-2"><code>{`func bad() error {
+        <pre className="bg-black/30 rounded-md p-3 text-xs overflow-x-auto my-2"><code>{`func bad() error {
     var e *MyError = nil   // 具体指针类型，值为 nil
     return e               // 接口里塞进了 (*MyError, nil)
 }
@@ -190,7 +189,7 @@ const faqs: FAQ[] = [
         <p>
           Go 没有声明式事务魔法，事务边界完全<strong>显式手写</strong>。标准范式是 <code>Begin → defer Rollback → ... → Commit</code>：
         </p>
-        <pre className="bg-black/30 rounded-lg p-3 text-xs overflow-x-auto my-2"><code>{`tx, err := db.BeginTx(ctx, nil)
+        <pre className="bg-black/30 rounded-md p-3 text-xs overflow-x-auto my-2"><code>{`tx, err := db.BeginTx(ctx, nil)
 if err != nil {
     return err
 }
@@ -218,7 +217,7 @@ function FAQItem({ faq, index }: { faq: FAQ; index: number }) {
   return (
     <div
       id={faq.id}
-      className="scroll-mt-24 rounded-xl border border-card-border bg-card overflow-hidden
+      className="scroll-mt-24 rounded-md border border-card-border bg-card overflow-hidden
                  hover:border-accent/30 transition-colors duration-200"
     >
       <button
@@ -241,23 +240,12 @@ function FAQItem({ faq, index }: { faq: FAQ; index: number }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
-            <div className="px-5 pb-5 pl-[3.75rem] text-sm text-foreground/80 leading-relaxed space-y-3
-                            [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-muted [&_code]:text-xs [&_code]:font-mono">
-              {faq.a}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {open && (
+        <div className="px-5 pb-5 pl-[3.75rem] text-sm text-foreground/80 leading-relaxed space-y-3
+                        [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-muted [&_code]:text-xs [&_code]:font-mono">
+          {faq.a}
+        </div>
+      )}
     </div>
   )
 }
@@ -274,7 +262,7 @@ export default function FAQPage() {
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">FAQ · 硬核技术问答</span>
         <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-3">
-          ❓ 常见困惑
+          常见困惑
           <span className="text-base font-normal text-muted-fg">Hardcore FAQ</span>
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
@@ -289,10 +277,10 @@ export default function FAQPage() {
           <button
             key={cat}
             onClick={() => setActiveCat(cat)}
-            className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border cursor-pointer
+            className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border cursor-pointer
               ${
                 activeCat === cat
-                  ? 'bg-accent text-white border-accent shadow-sm'
+                  ? 'bg-accent text-card border-accent shadow-sm'
                   : 'bg-muted text-muted-fg border-card-border hover:text-foreground hover:bg-muted-hover'
               }`}
           >
@@ -309,8 +297,8 @@ export default function FAQPage() {
       </div>
 
       {/* Footer hint */}
-      <div className="mt-12 p-5 rounded-xl bg-accent-light border border-accent/20 text-sm text-accent leading-relaxed">
-        💡 还有没解决的困惑？这些问题大多在
+      <div className="mt-12 p-5 rounded-md bg-accent-light border border-card-border text-sm text-accent leading-relaxed">
+        还有没解决的困惑？这些问题大多在
         <a href="/chapters/basics" className="underline font-semibold mx-1">章节教程</a>
         里有完整推导，或到
         <a href="/examples" className="underline font-semibold mx-1">实战示例库</a>

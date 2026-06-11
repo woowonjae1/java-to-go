@@ -4,7 +4,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
-import { ChapterIcon } from '@/components/chapter-icon'
+
 
 export default function ConcurrencyPage() {
   return (
@@ -12,9 +12,8 @@ export default function ConcurrencyPage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 4</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
-          <span className="text-emerald-500"><ChapterIcon id="concurrency" className="w-8 h-8" /></span>
-          <span>并发篇 — Threads → Goroutines</span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
+          并发篇 — Threads → Goroutines
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           从重量级的操作系统线程池，到轻量级的用户态协程。理解 Go 的 GMP 调度模型、通道（Channel）的状态机矩阵，以及如何使用 Context 实现超时与生命周期控制。
@@ -32,7 +31,7 @@ export default function ConcurrencyPage() {
       {/* Section 1: Threads vs Goroutine & GMP */}
       <section id="goroutines" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white text-sm font-bold">4.1</span>
+          <span className="font-mono text-muted-fg">§4.1</span>
           用户态协程与 GMP 调度模型
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -165,7 +164,7 @@ func main() {
       {/* Section 2: Mutex */}
       <section id="mutex" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white text-sm font-bold">4.2</span>
+          <span className="font-mono text-muted-fg">§4.2</span>
           互斥锁与读写锁：防范竞态条件 (Data Race)
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -218,7 +217,7 @@ func (c *SafeCounter) Get() int {
       {/* Section 3: Channels */}
       <section id="channels" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white text-sm font-bold">4.3</span>
+          <span className="font-mono text-muted-fg">§4.3</span>
           不要通过共享内存来通信，而要通过通信来共享内存
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -229,12 +228,12 @@ func (c *SafeCounter) Get() int {
           当一个协程需要给另一个协程传递数据时，它把数据放入通道，由对端协程消费。数据的所有权被转移，从而天然消除了数据竞争。
         </p>
 
-        <h3 className="text-lg font-bold mb-3 text-foreground">💡 核心精髓：Channel 状态机矩阵</h3>
+        <h3 className="text-lg font-bold mb-3 text-foreground">核心精髓：Channel 状态机矩阵</h3>
         <p className="text-muted-fg mb-4 leading-relaxed">
           编写 Channel 代码最容易犯错的地方，就是不清楚 Channel 在不同生命周期状态下的读写行为。请务必牢记以下行为表：
         </p>
 
-        <div className="overflow-x-auto my-6 border border-card-border rounded-xl">
+        <div className="overflow-x-auto my-6 border border-card-border rounded-md">
           <table className="min-w-full divide-y divide-card-border text-sm">
             <thead className="bg-muted/50">
               <tr>
@@ -318,7 +317,7 @@ go func() {
       {/* Section 4: select */}
       <section id="patterns" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white text-sm font-bold">4.4</span>
+          <span className="font-mono text-muted-fg">§4.4</span>
           select 多路复用：并发流程控制器
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -358,7 +357,7 @@ case <-time.After(3 * time.Second): // time.After 内部定时器在 3 秒后会
       {/* Section 5: Context vs ThreadLocal */}
       <section id="context" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white text-sm font-bold">4.5</span>
+          <span className="font-mono text-muted-fg">§4.5</span>
           [新增] Context 显式传递 vs ThreadLocal 隐式传递
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -584,8 +583,8 @@ func SafeWorker2(ctx context.Context) {
         <Link href="/chapters/errors" className="text-sm text-muted-fg hover:text-accent transition-colors flex items-center gap-1">
           ← 异常篇
         </Link>
-        <Link href="/" className="px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors flex items-center gap-2">
-          🎉 返回首页
+        <Link href="/" className="px-4 py-2 rounded-md border border-card-border text-sm font-medium text-foreground hover:bg-muted transition-colors flex items-center gap-2">
+          返回首页
         </Link>
       </div>
     </article>

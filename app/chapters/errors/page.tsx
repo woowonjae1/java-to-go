@@ -4,7 +4,7 @@ import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
-import { ChapterIcon } from '@/components/chapter-icon'
+
 
 export default function ErrorsPage() {
   return (
@@ -12,9 +12,8 @@ export default function ErrorsPage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 3</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
-          <span className="text-orange-500"><ChapterIcon id="errors" className="w-8 h-8" /></span>
-          <span>异常篇 — Exceptions → Errors</span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
+          异常篇 — Exceptions → Errors
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           告别 try-catch，拥抱显式错误处理。在 Go 的世界里，错误是普通的值，不是异常，控制流永远清晰可见。
@@ -32,7 +31,7 @@ export default function ErrorsPage() {
       {/* Section 1: try-catch -> if err != nil */}
       <section id="try-catch" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white text-sm font-bold">3.1</span>
+          <span className="font-mono text-muted-fg">§3.1</span>
           try-catch → if err != nil：显式控制流的艺术
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -177,7 +176,7 @@ func main() {
       {/* Section 2: Custom errors */}
       <section id="custom-errors" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white text-sm font-bold">3.2</span>
+          <span className="font-mono text-muted-fg">§3.2</span>
           哨兵错误 (Sentinel) 与自定义错误类型
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -236,7 +235,7 @@ func Pay() error {
       {/* Section 3: Wrapping */}
       <section id="error-wrapping" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white text-sm font-bold">3.3</span>
+          <span className="font-mono text-muted-fg">§3.3</span>
           错误包装与断言链 (`errors.Is` / `As`)
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -402,15 +401,15 @@ func main() {
       {/* Section 4: Panic/Recover */}
       <section id="panic-recover" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white text-sm font-bold">3.4</span>
+          <span className="font-mono text-muted-fg">§3.4</span>
           Panic 与 Recover：不要当成 Exception 来用
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
           Go 提供了一个类似抛出未捕获异常的机制：<strong>panic（恐慌）</strong>。当程序遇到致命 bug（如空指针解引用、数组越界）或主动调用 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">panic()</code> 时，程序会终止当前正常流，开始在调用栈中逆向冒泡。如果在逆向过程中没有遇到 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">recover()</code>，整个进程会直接闪退。
         </p>
 
-        <div className="my-6 p-5 rounded-xl bg-card border-l-4 border-red-500 bg-red-500/5">
-          <h4 className="text-sm font-bold mb-2 text-red-400">🚨 致命硬伤：跨 Goroutine 无法 Recover！</h4>
+        <div className="my-6 p-5 rounded-md bg-card border-l-4 border-red-500 bg-red-500/5">
+          <h4 className="text-sm font-bold mb-2 text-red-400">致命硬伤：跨 Goroutine 无法 Recover!</h4>
           <p className="text-sm text-muted-fg leading-relaxed">
             Java 可以在主线程拦截子线程未捕获异常做兜底。<strong>在 Go 中，recover 必须和 panic 处于同一个 Goroutine！</strong>
             如果您在主协程中写了 <code>recover()</code>，但开启的子协程（<code>{"go func() { panic(\"error\") }()"}</code>）发生了恐慌，主协程是绝对无法捕获该恐慌的。这个子协程的崩溃会瞬间拖垮整台服务器的所有协程，导致整个进程直接挂掉！因此，在任何子协程内部，都必须写好守护性的 <code>defer recover()</code>。
@@ -486,7 +485,7 @@ go func() {
       {/* Navigation */}
       <div className="flex justify-between items-center mt-12 pt-8 border-t border-card-border">
         <Link href="/chapters/oop" className="text-sm text-muted-fg hover:text-accent transition-colors">← 结构篇</Link>
-        <Link href="/chapters/concurrency" className="px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors flex items-center gap-2">
+        <Link href="/chapters/concurrency" className="px-4 py-2 rounded-md border border-card-border text-sm font-medium text-foreground hover:bg-muted transition-colors flex items-center gap-2">
           下一章：并发篇 →
         </Link>
       </div>

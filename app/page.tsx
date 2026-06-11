@@ -74,7 +74,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/chapters/basics"
-              className="px-8 py-3.5 rounded-xl text-white font-semibold text-base
+              className="px-8 py-3.5 rounded-md text-white font-semibold text-base
                          bg-gradient-to-r from-accent to-go
                          hover:shadow-[0_0_30px_rgba(99,102,241,0.3)]
                          transition-all duration-300 transform hover:scale-105
@@ -87,7 +87,7 @@ export default function Home() {
             </Link>
             <a
               href="https://github.com/woowonjae1/java-to-go"
-              className="px-8 py-3.5 rounded-xl font-semibold text-base
+              className="px-8 py-3.5 rounded-md font-semibold text-base
                          bg-muted hover:bg-accent-light border border-card-border
                          transition-all duration-300 flex items-center gap-2"
             >
@@ -116,7 +116,7 @@ export default function Home() {
           ].map((f, i) => (
             <div
               key={i}
-              className="p-5 rounded-2xl bg-card border border-card-border
+              className="p-5 rounded-md bg-card border border-card-border
                          hover:shadow-[var(--shadow-glow)] transition-all duration-300
                          hover:border-accent/30 group"
             >
@@ -136,7 +136,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="p-6 rounded-2xl bg-card border border-card-border"
+          className="p-6 rounded-md bg-card border border-card-border"
         >
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
             📊 学习进度
@@ -152,7 +152,7 @@ export default function Home() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="p-6 rounded-2xl bg-card border border-card-border shadow-[var(--shadow-sm)]"
+          className="p-6 rounded-md bg-card border border-card-border shadow-[var(--shadow-sm)]"
         >
           <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
             💡 Gopher 核心信条 (Go Proverbs)
@@ -192,7 +192,7 @@ export default function Home() {
             ].map((p, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-xl bg-muted/40 hover:bg-muted/80 hover:shadow-md border border-card-border hover:border-accent/20 transition-all duration-300 flex flex-col justify-between"
+                className="p-4 rounded-md bg-muted/40 hover:bg-muted/80 hover:shadow-md border border-card-border hover:border-accent/20 transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   <div className="text-accent font-mono text-xs font-semibold mb-1">Proverb #{idx + 1}</div>
@@ -230,7 +230,7 @@ export default function Home() {
             <motion.div key={ch.id} variants={item}>
               <Link
                 href={`/chapters/${ch.id}` as Route}
-                className="block p-6 rounded-2xl bg-card border border-card-border
+                className="block p-6 rounded-md bg-card border border-card-border
                            hover:shadow-[var(--shadow-lg)] hover:border-accent/30
                            transition-all duration-300 group h-full"
               >
@@ -238,7 +238,7 @@ export default function Home() {
                   {(() => {
                     const colors = chapterColorMap[ch.id] || { bg: 'bg-muted', text: 'text-foreground', border: 'border-transparent' }
                     return (
-                      <div className={`w-14 h-14 rounded-xl ${colors.bg} ${colors.text} ${colors.border} border
+                      <div className={`w-14 h-14 rounded-md ${colors.bg} ${colors.text} ${colors.border} border
                                        flex items-center justify-center flex-shrink-0
                                        group-hover:scale-110 transition-transform duration-300
                                        shadow-md`}>

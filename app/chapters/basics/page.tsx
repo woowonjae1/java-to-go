@@ -21,7 +21,7 @@ export default function BasicsPage() {
       </div>
 
       {/* Go Basics Syntax Cheat Sheet */}
-      <div className="p-6 rounded-2xl bg-card border border-card-border mb-12 shadow-[var(--shadow-sm)]">
+      <div className="p-6 rounded-md bg-card border border-card-border mb-12 shadow-[var(--shadow-sm)]">
         <h3 className="text-xl font-bold mb-3 flex items-center gap-2 text-foreground">
           <span>🚦 Go 基础语法快速对照 (Basics Cheat Sheet)</span>
         </h3>
@@ -111,7 +111,7 @@ export default function BasicsPage() {
           更关键的是，Go 引入了<strong>零值 (Zero Value)</strong> 机制：声明即初始化，默认赋初值，永远不存在未分配内存的 <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">null</code> 引发空指针异常（针对基本类型）。
         </p>
 
-        <div className="my-6 p-5 rounded-xl bg-card border border-card-border">
+        <div className="my-6 p-5 rounded-md bg-card border border-card-border">
           <h4 className="text-sm font-bold mb-2 text-foreground">💡 灵魂拷问：Go 是如何决定变量在栈上还是堆上分配的？</h4>
           <p className="text-sm text-muted-fg leading-relaxed">
             在 Java 中，非原始类型（Object）总是分配在堆上，容易产生 GC 压力。而 Go 编译器使用<strong>逃逸分析 (Escape Analysis)</strong>：在编译期分析变量的生命周期。
@@ -450,7 +450,7 @@ func main() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
-          <div className="p-5 rounded-xl bg-card border border-card-border">
+          <div className="p-5 rounded-md bg-card border border-card-border">
             <h3 className="font-bold text-base mb-2 text-accent">🔍 切片底层：Slice Header 内存模型</h3>
             <p className="text-sm text-muted-fg leading-relaxed mb-4">
               切片本身不是一个数组，它只是一个**轻量级结构体**，仅占用 24 字节内存，在 Go 源码中定义为：
@@ -467,7 +467,7 @@ func main() {
             </p>
           </div>
 
-          <div className="p-5 rounded-xl bg-card border border-card-border">
+          <div className="p-5 rounded-md bg-card border border-card-border">
             <h3 className="font-bold text-base mb-2 text-red-400">⚠️ Go Map 的阿喀琉斯之踵：并发 Panic</h3>
             <p className="text-sm text-muted-fg leading-relaxed mb-3">
               Java 的 <code className="font-mono text-xs">HashMap</code> 在多线程并发写时可能导致死循环或数据丢失，但不会直接崩溃。
@@ -672,7 +672,7 @@ func main() {
         </Link>
         <Link
           href="/chapters/oop"
-          className="px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-medium
+          className="px-5 py-2.5 rounded-md bg-accent text-white text-sm font-medium
                      hover:bg-accent-hover transition-colors flex items-center gap-2"
         >
           下一章：结构篇

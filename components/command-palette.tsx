@@ -56,7 +56,7 @@ export function CommandPalette() {
           />
           <div className="fixed top-[20%] left-1/2 -translate-x-1/2 w-full max-w-lg">
             <Command
-              className="rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden"
+              className="rounded-md border border-card-border bg-card shadow-2xl overflow-hidden"
               label="全局搜索"
             >
               <Command.Input

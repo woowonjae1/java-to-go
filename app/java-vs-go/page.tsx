@@ -161,7 +161,7 @@ export default function JavaVsGoPage() {
               <span>{g.icon}</span>
               {g.title}
             </h2>
-            <div className="rounded-2xl border border-card-border overflow-hidden shadow-[var(--shadow-sm)]">
+            <div className="rounded-md border border-card-border overflow-hidden shadow-[var(--shadow-sm)]">
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm border-collapse">
                   <thead>

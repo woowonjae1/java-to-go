@@ -3,7 +3,6 @@ import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
-import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function DatabasePage() {
   return (
@@ -11,9 +10,8 @@ export default function DatabasePage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 6</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
-          <span className="text-amber-500"><ChapterIcon id="database" className="w-8 h-8" /></span>
-          <span>数据篇 — 数据库与事务管理</span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
+          数据篇 — 数据库与事务管理
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           告别声明式事务魔法。对比 Java MyBatis/JPA，理解 Go 的 ORM 底层原理、`database/sql` 连接池的零配置自动调度，以及如何通过显式事务链及 defer 实现绝对可靠的数据事务一致性。
@@ -23,7 +21,7 @@ export default function DatabasePage() {
       {/* Section 1: ORM */}
       <section id="orm" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center text-white text-sm font-bold">6.1</span>
+          <span className="font-mono text-muted-fg">§6.1</span>
           ORM 框架对比：JPA / MyBatis vs GORM
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -88,7 +86,7 @@ for _, u := range users {
       {/* Section 2: Connection Pool */}
       <section id="pool" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center text-white text-sm font-bold">6.2</span>
+          <span className="font-mono text-muted-fg">§6.2</span>
           连接池自动管理：HikariCP 繁重配置 vs database/sql
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -126,7 +124,7 @@ db.SetConnMaxLifetime(time.Hour) // 设置单个物理连接的最大存活寿�
       {/* Section 3: Transaction */}
       <section id="transaction" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center text-white text-sm font-bold">6.3</span>
+          <span className="font-mono text-muted-fg">§6.3</span>
           事务处理：声明式事务的消亡与显式 defer 保护
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -401,7 +399,7 @@ func FindUsers(db *gorm.DB, param QueryParam) ([]User, error) {
         <Link href="/chapters/web" className="text-sm text-muted-fg hover:text-accent transition-colors flex items-center gap-1">
           ← Web 篇
         </Link>
-        <Link href="/chapters/middleware" className="px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors flex items-center gap-2">
+        <Link href="/chapters/middleware" className="px-4 py-2 rounded-md border border-card-border text-sm font-medium text-foreground hover:bg-muted transition-colors flex items-center gap-2">
           下一章：服务篇 →
         </Link>
       </div>

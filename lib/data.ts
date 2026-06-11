@@ -121,7 +121,7 @@ export const chapters: ChapterMeta[] = [
     id: 'basics',
     title: '基础篇',
     titleEn: 'Types & Variables',
-    icon: '🧱',
+    icon: '',
     color: 'from-blue-500 to-cyan-500',
     description: '类型系统、指针与值传递——从 Java 的包装类到 Go 的 zero value',
     sections: [
@@ -135,7 +135,7 @@ export const chapters: ChapterMeta[] = [
     id: 'oop',
     title: '结构篇',
     titleEn: 'OOP → Composition',
-    icon: '🏗️',
+    icon: '',
     color: 'from-purple-500 to-pink-500',
     description: '从深层类继承到扁平结构体组合——Go 的设计哲学',
     sections: [
@@ -150,7 +150,7 @@ export const chapters: ChapterMeta[] = [
     id: 'errors',
     title: '异常篇',
     titleEn: 'Exceptions → Errors',
-    icon: '🛡️',
+    icon: '',
     color: 'from-orange-500 to-red-500',
     description: '告别 try-catch，拥抱显式错误处理——Go 的错误即值理念',
     sections: [
@@ -164,7 +164,7 @@ export const chapters: ChapterMeta[] = [
     id: 'concurrency',
     title: '并发篇',
     titleEn: 'Threads → Goroutines',
-    icon: '⚡',
+    icon: '',
     color: 'from-green-500 to-emerald-500',
     description: '从重量级线程到轻量级协程——Go 的 CSP 并发模型',
     sections: [
@@ -179,7 +179,7 @@ export const chapters: ChapterMeta[] = [
     id: 'web',
     title: 'Web 篇',
     titleEn: 'Web & API Development',
-    icon: '🌐',
+    icon: '',
     color: 'from-rose-500 to-red-500',
     description: 'Spring Boot 转化为轻量 Web 路由——中间件拦截与数据绑定验证',
     sections: [
@@ -192,7 +192,7 @@ export const chapters: ChapterMeta[] = [
     id: 'database',
     title: '数据篇',
     titleEn: 'Database & Transactions',
-    icon: '💾',
+    icon: '',
     color: 'from-amber-500 to-yellow-600',
     description: '告别隐式声明式事务魔法——ORM 映射与显式事务的编写',
     sections: [
@@ -205,7 +205,7 @@ export const chapters: ChapterMeta[] = [
     id: 'middleware',
     title: '服务篇',
     titleEn: 'Middleware & RPC',
-    icon: '☁️',
+    icon: '',
     color: 'from-teal-500 to-emerald-600',
     description: '高并发网络中间件——go-redis 缓存、gRPC 契约与高性能 Zap 日志',
     sections: [
@@ -218,7 +218,7 @@ export const chapters: ChapterMeta[] = [
     id: 'architecture',
     title: '工程篇',
     titleEn: 'Project & Deployment',
-    icon: '⚙️',
+    icon: '',
     color: 'from-slate-500 to-zinc-600',
     description: '标准项目布局设计、表驱动测试、以及 10M 极简 Docker 二进制镜像打包',
     sections: [
@@ -231,7 +231,7 @@ export const chapters: ChapterMeta[] = [
     id: 'project',
     title: '实战篇',
     titleEn: 'Enterprise Case Study',
-    icon: '🚀',
+    icon: '',
     color: 'from-indigo-500 to-violet-600',
     description: '以 enterprise-ai-assistant-server 示例项目为范本，打通从基础语法到企业落地的最后一关，将核心架构完全平替为 Go 语言。',
     sections: [

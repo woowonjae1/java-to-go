@@ -3,7 +3,7 @@ import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
 import { ChapterQuiz } from '@/components/chapter-quiz'
 import Link from 'next/link'
-import { ChapterIcon } from '@/components/chapter-icon'
+
 
 export default function ArchitecturePage() {
   return (
@@ -11,9 +11,8 @@ export default function ArchitecturePage() {
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 8</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 flex items-center gap-2.5">
-          <span className="text-slate-500"><ChapterIcon id="architecture" className="w-8 h-8" /></span>
-          <span>工程篇 — 工程架构、测试与发布</span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
+          工程篇 — 工程架构、测试与发布
         </h1>
         <p className="text-lg text-muted-fg leading-relaxed">
           打通企业落地的最后一公里。对比 Java Maven/Gradle 多模块骨架、JUnit 反射测试、以及胖 JRE 容器镜像，理解 Go 物理包边界控制、Go 独有的表驱动测试（Table-Driven Tests），以及多阶段极简 Docker 打包部署。
@@ -23,7 +22,7 @@ export default function ArchitecturePage() {
       {/* Section 1: Project layout */}
       <section id="layout" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-500 to-zinc-600 flex items-center justify-center text-white text-sm font-bold">8.1</span>
+          <span className="font-mono text-muted-fg">§8.1</span>
           项目目录结构：Maven 多模块 vs 标准 Go 项目骨架
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -33,11 +32,11 @@ export default function ArchitecturePage() {
           Go 在编译期对依赖有严格的安全洁癖。Go 强制**禁止循环导入**（Circular Import）。
           为了防止架构腐化，Go 社区总结出了一套公认的**标准项目布局 (Standard Go Project Layout)**：
         </p>
-        <div className="p-5 rounded-xl bg-card border border-card-border mb-6">
+        <div className="p-5 rounded-md bg-card border border-card-border mb-6">
           <ul className="text-sm text-muted-fg space-y-2.5 font-mono">
-            <li>📂 <strong>/cmd</strong>：项目的入口文件夹。每个子目录代表一个可执行程序（如 `cmd/api/main.go`、`cmd/cron/main.go`），此目录不应写任何业务逻辑。</li>
-            <li>📂 <strong>/internal</strong>：私有业务逻辑。该目录下的代码仅能被当前模块内部包引入，拒绝外部包非法导入。它是 Go 限制代码耦合强有力的物理保护网。</li>
-            <li>📂 <strong>/pkg</strong>：公共共享组件。可被外部项目安全引用（如工具类、客户端 client SDK 契约）。</li>
+            <li><strong>/cmd</strong>：项目的入口文件夹。每个子目录代表一个可执行程序（如 `cmd/api/main.go`、`cmd/cron/main.go`），此目录不应写任何业务逻辑。</li>
+            <li><strong>/internal</strong>：私有业务逻辑。该目录下的代码仅能被当前模块内部包引入，拒绝外部包非法导入。它是 Go 限制代码耦合强有力的物理保护网。</li>
+            <li><strong>/pkg</strong>：公共共享组件。可被外部项目安全引用（如工具类、客户端 client SDK 契约）。</li>
           </ul>
         </div>
 
@@ -72,7 +71,7 @@ project-root/
       {/* Section 2: Testing */}
       <section id="testing" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-500 to-zinc-600 flex items-center justify-center text-white text-sm font-bold">8.2</span>
+          <span className="font-mono text-muted-fg">§8.2</span>
           单元测试与 Mock 机制：JUnit/Mockito 代理 vs 表驱动测试 (Table-Driven)
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -269,7 +268,7 @@ func main() {
       {/* Section 3: Deploy */}
       <section id="deploy" className="scroll-mt-24 mb-16">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-500 to-zinc-600 flex items-center justify-center text-white text-sm font-bold">8.3</span>
+          <span className="font-mono text-muted-fg">§8.3</span>
           容器化部署：胖 JRE 基础镜像 vs 10MB 极简二进制镜像
         </h2>
         <p className="text-muted-fg mb-6 leading-relaxed">
@@ -365,8 +364,8 @@ ENTRYPOINT ["./main"]`}
         <Link href="/chapters/middleware" className="text-sm text-muted-fg hover:text-accent transition-colors flex items-center gap-1">
           ← 服务篇
         </Link>
-        <Link href="/" className="px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors flex items-center gap-2">
-          🎉 返回首页
+        <Link href="/" className="px-4 py-2 rounded-md border border-card-border text-sm font-medium text-foreground hover:bg-muted transition-colors flex items-center gap-2">
+          返回首页
         </Link>
       </div>
     </article>

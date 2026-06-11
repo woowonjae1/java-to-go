@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { go } from '@codemirror/lang-go'
@@ -20,10 +19,10 @@ interface GoPlaygroundProps {
 }
 
 const difficultyConfig = {
-  easy: { label: '🟢 入门', color: 'text-green-500', bg: 'bg-green-500/10' },
-  medium: { label: '🟡 进阶', color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-  hard: { label: '🔴 挑战', color: 'text-red-500', bg: 'bg-red-500/10' },
-  expert: { label: '💀 地狱', color: 'text-purple-500', bg: 'bg-purple-500/10' },
+  easy: { label: '入门', color: 'text-muted-fg', bg: 'bg-muted border border-card-border' },
+  medium: { label: '进阶', color: 'text-muted-fg', bg: 'bg-muted border border-card-border' },
+  hard: { label: '挑战', color: 'text-foreground font-semibold', bg: 'bg-card border border-card-border' },
+  expert: { label: '地狱', color: 'text-foreground font-semibold', bg: 'bg-accent-light border border-accent/20' },
 }
 
 export function GoPlayground({
@@ -145,18 +144,11 @@ export function GoPlayground({
   }, [getCode, expectedOutput, id])
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.5 }}
-      className="my-8 rounded-2xl overflow-hidden border border-card-border bg-card shadow-[var(--shadow-md)]"
-    >
+    <div className="my-8 rounded-md overflow-hidden border border-card-border bg-card">
       {/* Header */}
       <div className="px-5 py-4 border-b border-card-border">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-base font-semibold flex items-center gap-2">
-            <span className="text-lg">🏗️</span>
             {title}
           </h3>
           <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${diff.color} ${diff.bg}`}>
@@ -176,9 +168,8 @@ export function GoPlayground({
         <button
           onClick={runCode}
           disabled={isRunning}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-white
-                     bg-gradient-to-r from-accent to-accent-hover
-                     hover:shadow-[0_0_20px_rgba(99,102,241,0.3)]
+          className="px-4 py-2 rounded-md text-sm font-medium text-white
+                     bg-accent hover:bg-accent-hover
                      disabled:opacity-50 disabled:cursor-not-allowed
                      transition-all duration-200 flex items-center gap-2"
         >
@@ -202,7 +193,7 @@ export function GoPlayground({
 
         <button
           onClick={resetCode}
-          className="px-3 py-2 rounded-lg text-sm text-muted-fg hover:text-foreground
+          className="px-3 py-2 rounded-md text-sm text-muted-fg hover:text-foreground
                      bg-muted hover:bg-accent-light transition-all duration-200
                      flex items-center gap-1.5"
         >
@@ -218,7 +209,7 @@ export function GoPlayground({
               setShowHints(true)
               setCurrentHintIndex(Math.min(currentHintIndex, hints.length - 1))
             }}
-            className="px-3 py-2 rounded-lg text-sm text-muted-fg hover:text-foreground
+            className="px-3 py-2 rounded-md text-sm text-muted-fg hover:text-foreground
                        bg-muted hover:bg-accent-light transition-all duration-200
                        flex items-center gap-1.5"
           >
@@ -231,7 +222,7 @@ export function GoPlayground({
 
         <button
           onClick={() => showSolution ? resetCode() : loadSolution()}
-          className="px-3 py-2 rounded-lg text-sm text-muted-fg hover:text-foreground
+          className="px-3 py-2 rounded-md text-sm text-muted-fg hover:text-foreground
                      bg-muted hover:bg-accent-light transition-all duration-200
                      flex items-center gap-1.5 ml-auto"
         >
@@ -244,37 +235,30 @@ export function GoPlayground({
       </div>
 
       {/* Hints */}
-      <AnimatePresence>
-        {showHints && hints.length > 0 && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="border-b border-card-border overflow-hidden"
-          >
-            <div className="px-5 py-3 bg-accent-light">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-accent">💡 提示 {currentHintIndex + 1}</span>
-                {currentHintIndex < hints.length - 1 && (
-                  <button
-                    onClick={() => setCurrentHintIndex(currentHintIndex + 1)}
-                    className="text-xs text-accent hover:underline"
-                  >
-                    下一个提示 →
-                  </button>
-                )}
-              </div>
-              <p className="text-sm text-muted-fg">{hints[currentHintIndex]}</p>
+      {showHints && hints.length > 0 && (
+        <div className="border-b border-card-border">
+          <div className="px-5 py-3 bg-accent-light">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-medium text-accent">提示 {currentHintIndex + 1}</span>
+              {currentHintIndex < hints.length - 1 && (
+                <button
+                  onClick={() => setCurrentHintIndex(currentHintIndex + 1)}
+                  className="text-xs text-accent hover:underline"
+                >
+                  下一个提示 →
+                </button>
+              )}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <p className="text-sm text-muted-fg">{hints[currentHintIndex]}</p>
+          </div>
+        </div>
+      )}
 
       {/* Output */}
       {(output || isCorrect !== null) && (
         <div className="border-t border-card-border">
           <div className="px-4 py-2.5 text-xs font-medium text-muted-fg bg-muted/50 flex items-center gap-2">
-            📤 输出
+            输出
           </div>
           <pre className={`px-4 py-3 text-sm font-mono overflow-x-auto whitespace-pre-wrap ${
             hasError ? 'text-red-400 bg-danger-bg' : 'bg-code-bg text-gray-300'
@@ -283,37 +267,34 @@ export function GoPlayground({
           </pre>
 
           {/* Result feedback */}
-          <AnimatePresence>
-            {isCorrect !== null && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                className={`px-4 py-3 flex items-center gap-2 text-sm font-medium ${
-                  isCorrect
-                    ? 'bg-success-bg text-success-fg border-t border-success-border'
-                    : 'bg-danger-bg text-danger-fg border-t border-danger-border'
-                }`}
-              >
-                {isCorrect ? (
-                  <>
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    🎉 完美！输出匹配预期结果！
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    输出与预期不匹配，预期: <code className="px-1.5 py-0.5 rounded bg-white/10">{expectedOutput}</code>
-                  </>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {isCorrect !== null && (
+            <div
+              className={`px-4 py-3 flex items-center gap-2 text-sm font-medium ${
+                isCorrect
+                  ? 'bg-success-bg text-success-fg border-t border-success-border'
+                  : 'bg-danger-bg text-danger-fg border-t border-danger-border'
+              }`}
+            >
+              {isCorrect ? (
+                <>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  完美！输出匹配预期结果！
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  输出与预期不匹配，预期: <code className="px-1.5 py-0.5 rounded bg-white/10">{expectedOutput}</code>
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }
+

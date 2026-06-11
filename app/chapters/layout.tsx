@@ -5,7 +5,6 @@ import type { Route } from 'next'
 import { usePathname } from 'next/navigation'
 import { chapters } from '@/lib/data'
 import { type ReactNode } from 'react'
-import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function ChaptersLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
@@ -16,21 +15,21 @@ export default function ChaptersLayout({ children }: { children: ReactNode }) {
       <aside className="hidden lg:block w-64 shrink-0 border-r border-sidebar-border bg-sidebar
                          sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto p-4">
         <nav className="space-y-1">
-          {chapters.map((ch) => {
+          {chapters.map((ch, index) => {
             const isActive = pathname === `/chapters/${ch.id}`
             return (
               <div key={ch.id}>
                 <Link
                   href={`/chapters/${ch.id}` as Route}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-md text-sm
                              transition-all duration-200 group
                              ${isActive
                                ? 'bg-accent-light text-accent font-semibold'
                                : 'text-muted-fg hover:text-foreground hover:bg-muted'
                              }`}
                 >
-                  <span className={`${isActive ? 'text-accent' : 'text-muted-fg group-hover:text-foreground'} shrink-0`}>
-                    <ChapterIcon id={ch.id} className="w-5 h-5" />
+                  <span className={`font-mono text-xs ${isActive ? 'text-accent' : 'text-muted-fg group-hover:text-foreground'} shrink-0`}>
+                    {String(index + 1).padStart(2, '0')}
                   </span>
                   <div>
                     <div className="font-medium">{ch.title}</div>

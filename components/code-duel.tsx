@@ -490,7 +490,7 @@ export function CodeDuel({ title, javaCode, goCode, highlights = [], description
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.5 }}
-      className="my-8 rounded-2xl overflow-hidden border border-card-border bg-card shadow-[var(--shadow-md)]"
+      className="my-8 rounded-md overflow-hidden border border-card-border bg-card shadow-[var(--shadow-md)]"
     >
       {/* Header */}
       <div className="px-5 py-4 border-b border-card-border flex items-center justify-between flex-wrap gap-3 bg-card-bg/50 backdrop-blur-sm">
@@ -633,7 +633,7 @@ export function CodeDuel({ title, javaCode, goCode, highlights = [], description
                     <button
                       key={idx}
                       onClick={() => handleOutlineClick(sec, idx)}
-                      className={`w-full text-left px-2.5 py-2.5 rounded-xl text-xs transition-all flex flex-col gap-0.5 cursor-pointer border
+                      className={`w-full text-left px-2.5 py-2.5 rounded-md text-xs transition-all flex flex-col gap-0.5 cursor-pointer border
                         ${isActive 
                           ? 'bg-accent/15 border-accent/30 text-accent font-semibold shadow-sm' 
                           : 'border-transparent text-muted-fg hover:bg-muted/50 hover:text-foreground'}`}
@@ -741,7 +741,7 @@ export function CodeDuel({ title, javaCode, goCode, highlights = [], description
                         <button
                           key={idx}
                           onClick={() => handleOutlineClick(sec, idx)}
-                          className={`w-full text-left px-3 py-3 rounded-xl text-xs transition-all flex flex-col gap-1 cursor-pointer border
+                          className={`w-full text-left px-3 py-3 rounded-md text-xs transition-all flex flex-col gap-1 cursor-pointer border
                             ${isActive 
                               ? 'bg-accent/15 border-accent/30 text-accent font-semibold shadow-sm' 
                               : 'border-transparent text-muted-fg hover:bg-muted/50 hover:text-foreground'}`}
