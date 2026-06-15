@@ -3,12 +3,22 @@ import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
+import { BeginnerGuide } from '@/components/beginner-guide'
 import Link from 'next/link'
 
 
 export default function OOPPage() {
   return (
     <article className="prose prose-zinc dark:prose-invert max-w-none">
+      <BeginnerGuide
+        stepNumber={2}
+        chapterTitle="结构篇 — OOP → Composition"
+        javaPrereqs={['class / interface', 'extends 继承', 'public/private/protected', 'Spring @Autowired']}
+        goKeywords={['struct', 'interface 鸭子类型', '嵌入 Embedding', '包可见性 首字母大小写', '构造函数 New*']}
+        mindShift="Go 没有继承。用结构体嵌入（Embedding）实现代码复用，用隐式接口（鸭子类型）实现多态。不需要 implements 关键字，只要实现了接口的全部方法就自动符合。"
+        prevHref="/chapters/basics"
+        prevLabel="基础篇"
+      />
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 2</span>

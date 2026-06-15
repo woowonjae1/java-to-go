@@ -3,12 +3,22 @@ import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
+import { BeginnerGuide } from '@/components/beginner-guide'
 import Link from 'next/link'
 
 
 export default function ConcurrencyPage() {
   return (
     <article className="prose prose-zinc dark:prose-invert max-w-none">
+      <BeginnerGuide
+        stepNumber={4}
+        chapterTitle="并发篇 — Threads → Goroutines"
+        javaPrereqs={['Thread / Runnable', 'synchronized', 'ExecutorService 线程池', 'BlockingQueue', 'ThreadLocal']}
+        goKeywords={['goroutine go 关键字', 'sync.WaitGroup', 'channel chan', 'select', 'context.Context']}
+        mindShift="goroutine 比 Thread 轻得多，开启一个只需写 go。数据交换首选 channel 而非共享内存。ThreadLocal 在 Go 中没有对应物，用显式传递 context.Context 替代。"
+        prevHref="/chapters/errors"
+        prevLabel="异常篇"
+      />
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 4</span>

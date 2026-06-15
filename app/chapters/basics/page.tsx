@@ -2,12 +2,20 @@ import { CodeDuel } from '@/components/code-duel'
 import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
 import { ChapterQuiz } from '@/components/chapter-quiz'
+import { BeginnerGuide } from '@/components/beginner-guide'
 import Link from 'next/link'
 import { ChapterIcon } from '@/components/chapter-icon'
 
 export default function BasicsPage() {
   return (
     <article className="prose prose-zinc dark:prose-invert max-w-none">
+      <BeginnerGuide
+        stepNumber={1}
+        chapterTitle="基础篇 — Types & Variables"
+        javaPrereqs={['int / Integer 区别', '对象引用传递', 'String', 'ArrayList / HashMap']}
+        goKeywords={['零値 zero value', '指针 * 和 &', 'string + rune', 'slice / map', '逃逸分析']}
+        mindShift="Go 没有包装类（Integer、Boolean…）。所有类型声明后自动赋「零値」（int=0、string=&quot;&quot;、bool=false），永远不会出现未初始化状态。要表达 ‘缺失値’请用指针 *int。"
+      />
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 1</span>

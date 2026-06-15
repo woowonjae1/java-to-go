@@ -3,12 +3,22 @@ import { GoPlayground } from '@/components/go-playground'
 import { GotchaCallout } from '@/components/gotcha-callout'
 import { MindShift } from '@/components/mind-shift'
 import { ChapterQuiz } from '@/components/chapter-quiz'
+import { BeginnerGuide } from '@/components/beginner-guide'
 import Link from 'next/link'
 
 
 export default function ErrorsPage() {
   return (
     <article className="prose prose-zinc dark:prose-invert max-w-none">
+      <BeginnerGuide
+        stepNumber={3}
+        chapterTitle="异常篇 — Exceptions → Errors"
+        javaPrereqs={['try / catch / finally', 'throws 声明', 'RuntimeException', 'IOException']}
+        goKeywords={['if err != nil', 'error 接口', 'defer', 'errors.Is / As', 'fmt.Errorf %w', 'panic / recover']}
+        mindShift="Go 没有异常机制。函数会同时返回「结果」和「错误」两个值，你必须在调用处立刻检查 err。控制流永远是显式、可见的。defer 是 Go 的 finally。"
+        prevHref="/chapters/oop"
+        prevLabel="结构篇"
+      />
       {/* Chapter header */}
       <div className="mb-10 border-b border-card-border pb-6">
         <span className="text-sm text-accent font-mono mb-2 block">Chapter 3</span>

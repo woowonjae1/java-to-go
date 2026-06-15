@@ -85,6 +85,15 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </Link>
+            <Link
+              href="/beginner"
+              className="px-8 py-3.5 rounded-md font-semibold text-base
+                         bg-green-500/10 hover:bg-green-500/20 border border-green-500/30
+                         text-green-400 hover:text-green-300
+                         transition-all duration-300 flex items-center gap-2"
+            >
+              🐹 我是 Go 新手
+            </Link>
             <a
               href="https://github.com/woowonjae1/java-to-go"
               className="px-8 py-3.5 rounded-md font-semibold text-base
@@ -205,6 +214,39 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </motion.div>
+      </section>
+
+      {/* Beginner Track Banner */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col sm:flex-row items-start sm:items-center gap-4
+                     p-5 rounded-md border border-green-500/25 bg-green-500/5
+                     hover:border-green-500/40 hover:bg-green-500/8 transition-all duration-300"
+        >
+          <div className="text-4xl shrink-0">🐹</div>
+          <div className="flex-1">
+            <h3 className="font-bold text-green-300 mb-1">第一次学 Go？从这里开始</h3>
+            <p className="text-sm text-muted-fg leading-relaxed">
+              专为有 Java 基础的 Go 新手设计的入门引导——思维转变总结、语法速查对照表、推荐学习路线，帮你少走弯路。
+            </p>
+          </div>
+          <Link
+            href="/beginner"
+            className="shrink-0 px-5 py-2.5 rounded-md text-sm font-semibold
+                       bg-green-500/15 hover:bg-green-500/25 border border-green-500/30
+                       text-green-300 hover:text-green-200 transition-all duration-300
+                       flex items-center gap-1.5 whitespace-nowrap"
+          >
+            查看入门指南
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
         </motion.div>
       </section>
 

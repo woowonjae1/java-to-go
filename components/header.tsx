@@ -57,7 +57,14 @@ export function Header() {
             首页
           </Link>
 
-          {/* Dropdown for chapters */}
+          <Link
+            href="/beginner"
+            className="px-3 py-1.5 text-sm font-medium text-green-400 hover:text-green-300
+                       hover:bg-green-500/10 rounded-md transition-colors flex items-center gap-1"
+          >
+            🐹 入门指南
+          </Link>
+
           <div
             className="relative"
             onMouseEnter={handleMouseEnter}
@@ -170,6 +177,15 @@ export function Header() {
               <span>{ch.title}</span>
             </Link>
           ))}
+          <div className="border-t border-card-border my-1.5" />
+          <Link
+            href="/beginner"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm
+                       text-green-400 hover:bg-green-500/10 transition-colors font-medium"
+          >
+            🐹 入门指南
+          </Link>
           <div className="border-t border-card-border my-1.5" />
           <Link href="/project-comparison" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">
             实战对比
