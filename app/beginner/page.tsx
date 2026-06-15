@@ -391,6 +391,41 @@ export default function BeginnerPage() {
           ))}
         </motion.div>
       </section>
+      {/* ── 外部参考资源 ── */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="p-6 rounded-md bg-card border border-card-border"
+        >
+          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+            📚 推荐外部资源
+          </h2>
+          <p className="text-sm text-muted-fg mb-5 leading-relaxed">
+            我们的指南侧重于从 Java 到 Go 的<strong>思维转变与实战避坑</strong>。如果你想从零开始，系统地过一遍 Go 语言的每一个基础语法点，强烈建议搭配以下教程食用：
+          </p>
+          <a
+            href="https://www.runoob.com/go/go-tutorial.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-4 p-4 rounded-md border border-card-border hover:border-accent/50 hover:bg-muted/50 transition-all group"
+          >
+            <div className="text-3xl grayscale group-hover:grayscale-0 transition-all duration-300">
+              📖
+            </div>
+            <div>
+              <h3 className="font-semibold group-hover:text-accent transition-colors">
+                菜鸟教程：Go 语言教程
+              </h3>
+              <p className="text-xs text-muted-fg mt-1">
+                非常详尽的基础语法词典，适合新手查漏补缺，随时作为案头手册参考。
+              </p>
+            </div>
+          </a>
+        </motion.div>
+      </section>
 
       {/* ── 底部 CTA ── */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-20">
